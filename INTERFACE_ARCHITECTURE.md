@@ -45,7 +45,61 @@ User errors and internal errors must break the regular flow of the program due t
 
 ## Stateful interfaces
 
-TODO
+A stateful interface is one who's outputs are determined by its input and its "implied state". I have used the terminology "implied state" for years now even though I'm actively looking for a more accurate term.
+
+A stateful interface consists of two types of methods: "views" and "actions". An action alters the implied state whereas views merely extract data from the system. Actually, there are no views, I think that only applies to the next section. Technically, a stateful interface should only have one action (and enums can be used for different behaviours) but we won't get into that, and we'll just allow multiple methods for the time being.
+
+A stateful interface has actions applied to it over time. For a given action, it may be accepted or rejected.
+
+At any point, the implied state of the interface is the set of all action-acceptance pair lists such that for any action-acceptance pair list, inputting those actions should result in those acceptance statuses being returned, and any further actions not being accepted if the list is not infinite.
+
+Here is an example of an implied state (`{}` notation is used to denote a set):
+
+```
+{
+	[("increment", true), ("increment"), false],
+	[("double_increment", false)]
+}
+```
+
+Here are two examples of contracts which have this implied state:
+
+```
+// Example 1
+
+let counter = 0;
+const max_count = 1;
+
+const increment = () => {
+	if (counter + 1 > max_count) {
+		throw "rejected";
+	}
+
+	counter += 1;
+};
+
+const double_increment = () => {
+	if (counter + 2 > max_count) {
+		throw "rejected";
+	}
+
+	counter += 2;
+};
+
+// Example 2
+
+// The same system as above except where `max_count = 3` but `increment` has already been invoked two times.
+```
+
+A stateful interface is only useful for interfaces that are solely owned by a single user, and so they have complete deterministic control over the state. The interface user can build up their own representation of the implied state (there are many many ways to encode the same applied state!) and it is the responsibility of the interface user to not call actions that would be rejected.
+
+Internal errors work the same way as deterministic interfaces, only that the state after such an error is now unknown and so the interface instance has been corrupted, thus further method calls should all result in additional internal errors being reported.
+
+User errors are when either illegal input is provided, or input is provided when the system is in a state where the action would be rejected.
+
+There are three policies for user errors as is the case for deterministic interfaces. It is preferable to avoid user errors by using the type-system but the reality is that most programming languages struggle to encode this in the type-system, so we often have to resort to reported user errors or undefined behaviour. It is the responsibility of the interface user to vaerify input and maintain state to ensure that methods are not invoked at bad times.
+
+In a perfect world, a stateful interface is entirely a compile-time construct. There is no implementation, as all an implementation may do is report user errors when the type-system fails to provide these errors instead.
 
 ## Externally-influenced interfaces
 
