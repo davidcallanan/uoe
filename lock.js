@@ -1,12 +1,12 @@
 import { create_promise } from "./create_promise.js";
-import { build_obj } from "./build-obj.js";
+import { build_obj } from "./build_obj.js";
 
 /**
  * This implementation is prone to circular deadlocks.
  */
 export const create_lock = () => {
 	let is_locked = false;
-	let outstanding_promises = [];
+	const outstanding_promises = [];
 	
 	return build_obj({
 		async acquire(callback) {
@@ -16,16 +16,16 @@ export const create_lock = () => {
 					return Promise.resolve();
 				}
 	
-				let [promise, res, _rej] = create_promise();
+				const [promise, res, _rej] = create_promise();
 				outstanding_promises.push(res);
 				return promise;
 			});
 	
-			let result = await callback();
+			const result = await callback();
 	
 			(async () => {
 				if (outstanding_promises.length > 0) {
-					let resolve = outstanding_promises.shift();
+					const resolve = outstanding_promises.shift();
 					resolve();
 				} else {
 					is_locked = false;
@@ -39,11 +39,11 @@ export const create_lock = () => {
 				return await callback(false);
 			} else {
 				is_locked = true;
-				let result = await callback(true);
+				const result = await callback(true);
 	
 				(async () => {
 					if (outstanding_promises.length > 0) {
-						let resolve = outstanding_promises.shift();
+						const resolve = outstanding_promises.shift();
 						resolve();
 					} else {
 						is_locked = false;
