@@ -43,6 +43,10 @@ There are two internal error policies a deterministic interface can choose to us
 
 User errors and internal errors must break the regular flow of the program due to contractual obligations not being met. This can be achieved using the language's exception system, and in the case of JavaScript, this is the `throw` keyword.
 
+The type system should also include how the input types can alter the output types. With the highest level of precision, an interface can demand an exact input-output mapping, essentially replicating the implementation code directly in the interface (of course there can still be various different implementations). I refer to "code-in-the-interface" as a "description". It appears that not many, if any, languages have a "description" system. Thus this is generally difficult to enforce at compile-time. Generally this behaviour in an interface is merely described in documentation instead due to the limitations of the type system which is rather unfortunate.
+
+Anyway, a deterministic interface which is open to different input-output mappings (but for a given instance, must remain determinstic) is to be referred to as a "free determinstic interface", whereas, on the other hand, one with an upfront input-output mapping is to be referred to as a "fully-constrained determinstic interface". This is where any possible value in the input type will constrain the output to a single-value type, that is, a set containing only one value. In the middle, we have "partially-constrained deterministic interface". A free interface is where no input alters the output types in any way whatsoever.
+
 ## Stateful interfaces
 
 A stateful interface is one who's outputs are determined by its input and its "implied state". I have used the terminology "implied state" for years now even though I'm actively looking for a more accurate term.
