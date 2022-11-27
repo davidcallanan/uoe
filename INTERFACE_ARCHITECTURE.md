@@ -103,4 +103,22 @@ In a perfect world, a stateful interface is entirely a compile-time construct. T
 
 ## Externally-influenced interfaces
 
-TODO
+An externally-influenced interface is where the implementation is responsible for maintaining state, where multiple users (through potentially different entry interfaces) will have an impact on the state of the system. The external sources that can alter the state of these interfaces can potentially include factors such as randomness.
+
+It would seem that any externally-influenced interface can be built on top of a stateful interface, implementing a specific state representation for the implied state of the stateful interface.
+
+These interfaces consist of two types of methods, which are actions and views. Actions alter the state whereas views merely extract data from the state of the system.
+
+Actions and views can be compared with commands and queries and the command-query segragation principle is quite prominent. It is recommended (but not sure if should be required) for an implementation to expose separate view and action interfaces.
+
+The views will always return stale data in a sense, as the user is not gaining any transactional lock over the interface, so there is no way a user can guarantee that this is up-to-date in any way.
+
+All actions are transactions. If they alter the state, they have the ability to read the current state under-the-hood and are required to implement any appropriate locking mechanisms to gain complete control over this state until the action has been applied. They must conceptually/logically apply these actions in order as if they are transactions, but under-the-hood, optimization mechanisms may allow for implementations to process actions in a different order and perhaps at the same time.
+
+Externally-influenced interfaces bring some more errors directly into the interface.
+
+User errors should still be part of the type system where possible, but the same policies as before allow for a user error to be thrown at runtime or to follow the route of undefined behaviour.
+
+A new type of error, a state error, is directly part of the interface. It is to be returned in the signature of any action. This type of error does not use the language's exception feature to break the regular flow of the program, as it is a type of error that is expected, and strongly part of the interface. In a language like Rust, you would use a Result-type enum where the error option is then another enum specific to the method in question (as each method can have different combinations of errors that are allowed, so there should not be an interface-wide error enum that is used).
+
+I think that's all that has to be said for externally-influenced interfaces.
