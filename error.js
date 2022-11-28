@@ -59,9 +59,10 @@ export const userError = user_error;
  * a.increment(); // ok
  * b.increment(); // throws state error
  */
-export const state_error = (message, cause) => {
+export const state_error = (type, message, cause) => {
 	let err = new Error(message);
 	err.name = "StateError";
+	err.type = type;
 	err.cause = cause;
 	return err;
 };

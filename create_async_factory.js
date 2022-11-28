@@ -15,7 +15,7 @@
  */
 export const create_async_factory = (cls) => {
 	return async (...args) => {
-		let obj = new cls(...args);
+		const obj = new cls(...args);
 		obj._init && await obj._init();
 
 		for (let key of Object.keys(obj)) {

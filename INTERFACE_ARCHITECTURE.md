@@ -47,6 +47,8 @@ The type system should also include how the input types can alter the output typ
 
 Anyway, a deterministic interface which is open to different input-output mappings (but for a given instance, must remain determinstic) is to be referred to as a "free determinstic interface", whereas, on the other hand, one with an upfront input-output mapping is to be referred to as a "fully-constrained determinstic interface". This is where any possible value in the input type will constrain the output to a single-value type, that is, a set containing only one value. In the middle, we have "partially-constrained deterministic interface". A free interface is where no input alters the output types in any way whatsoever.
 
+These interfaces should be synchornous. However, due to limitations in JavaScript, all methods must be async.
+
 ## Stateful interfaces
 
 A stateful interface is one who's outputs are determined by its input and its "implied state". I have used the terminology "implied state" for years now even though I'm actively looking for a more accurate term.
@@ -105,6 +107,10 @@ There are three policies for user errors as is the case for deterministic interf
 
 In a perfect world, a stateful interface is entirely a compile-time construct. There is no implementation, as all an implementation may do is report user errors when the type-system fails to provide these errors instead.
 
+All methods should be synchornous. However, due to limitations in JavaScript, all methods must be async.
+
+Stateful interfaces don't make sense in TypeScript due to the type system not being good enough.
+
 ## Externally-influenced interfaces
 
 An externally-influenced interface is where the implementation is responsible for maintaining state, where multiple users (through potentially different entry interfaces) will have an impact on the state of the system. The external sources that can alter the state of these interfaces can potentially include factors such as randomness.
@@ -126,3 +132,57 @@ User errors should still be part of the type system where possible, but the same
 A new type of error, a state error, is directly part of the interface. It is to be returned in the signature of any action. This type of error does not use the language's exception feature to break the regular flow of the program, as it is a type of error that is expected, and strongly part of the interface. In a language like Rust, you would use a Result-type enum where the error option is then another enum specific to the method in question (as each method can have different combinations of errors that are allowed, so there should not be an interface-wide error enum that is used).
 
 I think that's all that has to be said for externally-influenced interfaces.
+
+All methods should be async.
+
+## Stateless externally-influenced interfaces
+
+There is no exposed concept of state to the user. These simply consist of methods which take input and return non-determinstic output. Methods may alter some underlying state, but this is not the concern of the user.
+
+## Intermediate stateful interface where the state is not owned
+
+They expose a stateful interface but the implementation owns the state.
+
+External factors are encoded as events and there must still be some deterministicity based on these events. So, there remains an action history but there exists actions not executed by the user, coming from external influence.
+
+# Function
+
+Alternative names:
+
+ - Deterministic function.
+ - Deterministic interface.
+
+Properties:
+
+ - Deterministic by input.
+ - A description can further constrain output types based on input.
+
+We call a function a "free function" if all inputs result in output types with no further constraints.
+
+We call a function a "partially-constrained function" if some inputs result in output types with further constraints.
+
+We call a function a "fully-constrained function" if all inputs result in output types which are singletons (sets of exactly one element).
+
+For a fully-constained function, the input-output mapping is identical to that of any implementation.
+
+Two functions are said to be "equivalent" if they have the same input-output type mapping.
+
+# Contract
+
+Alternative names:
+
+ - Stateful interface.
+ - Machine.
+
+Properties:
+
+ - Deterministic by combination of input and the implied state.
+ - A description can constrain input types based on the implied state.
+
+A method of a contract is said to be an "action" if there exists a combination of input and implied state which alters the implied state. Otherwise, the method is said to be a "view".
+
+Two contracts are said to be "equivalent" if they have the same (input+implied state)-output type mapping.
+
+A contract is said to be "bare" if it contains no views. The "bare" contract of a contract is the contract which has all views removed.
+
+A contract is said to "extend" a viewless contract if the removal of all views from the contract (its bare contract) results in an equivalent contract.
