@@ -25,9 +25,8 @@
  * };
  */
 export const user_error = (message, cause) => {
-	let err = new Error(message);
+	let err = new Error(message, { cause });
 	err.name = "UserError";
-	err.cause = cause;
 	return err;
 };
 
@@ -60,10 +59,9 @@ export const userError = user_error;
  * b.increment(); // throws state error
  */
 export const state_error = (type, message, cause) => {
-	let err = new Error(message);
+	let err = new Error(message, { cause });
 	err.name = "StateError";
 	err.type = type;
-	err.cause = cause;
 	return err;
 };
 
@@ -84,9 +82,8 @@ export const stateError = state_error;
  * Example omitted because why not.
  */
 export const internal_error = (message, cause) => {
-	let err = new Error(message);
+	let err = new Error(message, { cause });
 	err.name = "InternalError";
-	err.cause = cause;
 	return err;
 };
 

@@ -52,4 +52,4 @@ export const unsuspended_api = (api_promise) => {
 	});
 };
 
-export const unsuspendedApi = unsuspend_api;
+export const unsuspendedApi = unsuspended_api;

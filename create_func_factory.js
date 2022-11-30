@@ -1,4 +1,6 @@
 import { user_error } from "./error.js";
+import { unsuspended_factory } from "./unsuspended_factory.js";
+import { internal_error } from "./error.js";
 
 export const create_func_factory = (cls) => {
 	return unsuspended_factory(async (...args) => {
