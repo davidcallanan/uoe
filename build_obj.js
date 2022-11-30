@@ -22,7 +22,7 @@ export const build_obj = (...steps) => {
 	let obj = {};
 
 	for (let step of steps) {
-		let next = typeof part === "function" ? step(obj) : step;
+		let next = typeof step === "function" ? step(obj) : step;
 
 		obj = {
 			...obj,
