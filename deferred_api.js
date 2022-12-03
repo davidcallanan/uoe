@@ -22,12 +22,12 @@ import { unsuspended_api } from "./unsuspended_api.js";
  *   resolve_fetch(window.fetch);
  * });
  */
-export const deferred_api = (factory) => {
+export const deferred_api = (async_factory) => {
 	const [api_promise, resolve_api] = suspended_api();
 	const api = unsuspended_api(api_promise);
 	
-	if (factory !== undefined) {
-		resolve_api(factory());
+	if (async_factory !== undefined) {
+		async_factory().then(resolve_api);
 		return api;
 	}
 
