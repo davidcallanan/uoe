@@ -74,7 +74,7 @@ export const unsuspended_api = (api_promise) => {
 					throw user_error(`API does not have method ${prop}`);
 				}
 
-				return api[prop](...args);
+				return await api[prop](...args);
 			};
 		},
 	});
