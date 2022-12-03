@@ -40,7 +40,9 @@ export const unsuspended_api = (api_promise) => {
 			(await api_promise).then !== undefined &&
 				console.warn("Resolved api object must not be thenable due to a JavaScript promises anomoly. The then property has been forcefully unset.");
 			;
-		} catch {}
+		} catch (e) {
+			console.error(e);
+		}
 	})();
 
 	return new Proxy(async (...args) => {
