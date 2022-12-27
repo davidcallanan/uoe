@@ -1,4 +1,4 @@
-import { create_promise } from "./create_promise.js";
+import { create_promise } from "./create_promise.ts";
 import { build_obj } from "./build_obj.js";
 
 /**
