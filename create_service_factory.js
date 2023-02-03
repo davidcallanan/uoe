@@ -6,6 +6,13 @@ export const create_service_factory = (cls) => {
 		const obj = new cls(...args);
 		obj._init && await obj._init();
 
+		const origin = Symbol("origin");
+
+		cls._user_error = (message, cause) => {
+			const error = user_error(message, cause);
+			error._origin = origin;
+		};
+
 		for (let key of Object.keys(obj)) {
 			if (key.startsWith("_")) {
 				continue;
@@ -20,4 +27,4 @@ export const create_service_factory = (cls) => {
 	});
 };
 
-export const createUnsuspendedFactory = create_unsuspended_factory;
+export const createServiceFactory = create_service_factory;

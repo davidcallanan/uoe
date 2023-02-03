@@ -8,10 +8,10 @@ export const iter_arr_reverse = (arr) => {
 					idx--;
 
 					return {
-						done : idx < 0,
-						value : arr[idx]
+						done: idx < 0,
+						value: arr[idx],
 					};
-				}
+				},
 			};
 		},
 	};
