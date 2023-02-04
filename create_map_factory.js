@@ -38,10 +38,7 @@ const syntactic_sugar = (uly_map) => {
  * let adder = create_adder();
  * 
  * // verbose usage:
- * await adder({
- * 	 type: "add",
- * 	 value: [5, 6],
- * });
+ * await adder(enm.add([5, 6]));
  * 
  * // concise usage:
  * await adder.add([5, 6]);

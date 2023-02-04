@@ -1,3 +1,31 @@
+const syntactic_sugar = (overall, curr) => new Proxy(curr, {
+	get: (_, prop) => {
+		if (overall === undefined) {
+			overall = {};
+		}
+
+		const result = (value) => {
+			if (curr === undefined) {
+				result.value = value;
+			} else {
+				curr.value.value = value;
+			}
+
+			return result;
+		};
+
+		Object.assign(result, overall);
+
+		if (curr === undefined) {
+			result.type = prop;
+		} else {
+			curr.value = { type: prop };
+		}
+
+		return syntactic_sugar(result, curr === undefined ? result : curr.value)
+	},
+});
+
 /**
  * Constructs an enum object.
  * 
@@ -5,18 +33,9 @@
  * 
  * const pet = enm.cat({ name: "Fluffy" });
  * const bate = enm.fish;
- * draw_animals([pet, bate]);
+ * draw_animals(tup([pet, bate])({
+ *   stroke: enm.no_stroke,
+ *   fill: enm.with_fill.gradient(tup([enm.red, enm.blue]))
+ * }));
  */
-export const enm = new Proxy({}, {
-	get: (_, prop) => {
-		const e = (value) => {
-			return {
-				type: prop,
-				value,
-			};
-		};
-
-		e.type = prop;
-		return e;
-	},
-});
+export const enm = syntactic_sugar();
