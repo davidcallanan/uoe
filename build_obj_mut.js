@@ -5,7 +5,7 @@
  */
 export const build_obj_mut = (initial_obj, ...steps) => {
 	for (let step of steps) {
-		let next = typeof step === "function" ? step(obj) : step;
+		let next = typeof step === "function" ? step(initial_obj) : step;
 		Object.assign(initial_obj, next);
 	}
 
