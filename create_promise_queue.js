@@ -1,5 +1,3 @@
-import { create_unsuspended_factory } from "./create_unsuspended_factory.js";
-
 class PromiseQueue {
     constructor() {
         this._queue = new Set();
@@ -9,41 +7,28 @@ class PromiseQueue {
         this._queue.add(promise);
     }
 
-    _all() {
-        let self = this;
-        let already_iterated = false;
+	_all(results) {
+        let all = Promise.all(this._queue);
+        this._queue = [];
 
-        return Promise.all({
-            [Symbol.iterator]: function*() {
-                if (already_iterated) {
-                    console.error("already iterated");
-                    throw new Error("already iterated");
-                }
+        return all.then((new_results) => {
+            results.push(...new_results);
 
-                already_iterated = true;
-
-                while (true) {
-                    let { value: promise, done } = self._queue.values().next();
-                    
-                    if (done) {
-                        return;
-                    }
-                    
-                    self._queue.delete(promise);
-
-                    yield promise;
-                }
+            if (this._queue.length > 0) {
+                return this._all(results);
             }
+
+            return results;
         });
     }
 
 	all() {
 		if (this._existing_all === undefined) {
-			this._existing_all = this._all();
+			this._existing_all = this._all([]);
 		}
 
 		return this._existing_all;
-	}
+    }
 }
 
 export const create_promise_queue = () => new PromiseQueue();
