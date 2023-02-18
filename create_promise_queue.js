@@ -38,5 +38,5 @@ class PromiseQueue {
     }
 }
 
-export const create_promise_queue = create_unsuspended_factory(PromiseQueue);
+export const create_promise_queue = () => new PromiseQueue();
 export const createPromiseQueue = create_promise_queue;
