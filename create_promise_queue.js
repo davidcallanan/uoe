@@ -9,7 +9,7 @@ class PromiseQueue {
         this._queue.add(promise);
     }
 
-    all() {
+    _all() {
         let self = this;
         let already_iterated = false;
 
@@ -36,6 +36,14 @@ class PromiseQueue {
             }
         });
     }
+
+	all() {
+		if (this._existing_all === undefined) {
+			this._existing_all = this._all();
+		}
+
+		return this._existing_all;
+	}
 }
 
 export const create_promise_queue = () => new PromiseQueue();
