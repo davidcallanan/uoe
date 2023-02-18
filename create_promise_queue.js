@@ -1,10 +1,10 @@
 class PromiseQueue {
     constructor() {
-        this._queue = new Set();
+        this._queue = [];
     }
 
     add(promise) {
-        this._queue.add(promise);
+        this._queue.push(promise);
     }
 
 	_all(results) {
