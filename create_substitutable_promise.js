@@ -15,6 +15,8 @@ class SubstitutablePromise {
 				return this._exposed();
 			}
 
+			this._is_resolved = true;
+
 			return result;
 		}).catch(err => {
 			if (this._promise !== promise) {
@@ -31,6 +33,10 @@ class SubstitutablePromise {
 		}
 
 		return this._existing_exposed;
+	}
+
+	is_resolved() {
+		return this._is_resolved === true;
 	}
 }
 
