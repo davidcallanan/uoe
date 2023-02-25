@@ -21,17 +21,14 @@ export const create_async_factory = (cls) => {
 		obj._init && await obj._init();
 
 		const result = obj._call !== undefined ? as_async(obj._call) : obj;
+		Object.assign(result, obj);
 
-		for (let key in obj) {
-			if (key.startsWith("_")) {
-				continue;
-			}
-
-			if (typeof obj[key] === "function") {
-				result[key] = result[key].bind(obj);
+		for (const key in result) {
+			if (typeof key === "function") {
+				result[key] = result[key].bind(result);
 			}
 		}
-
+		
 		return result;
 	};
 };
