@@ -6,9 +6,9 @@ import { iter_zip } from "./iter_zip.js";
  * @example
  * 
  * const vector = tup(1, 2)({ z: 3 });
- * const { x, y, z } = extract_tuple(vector, ["x", "y", "z"]);
+ * const { x, y, z } = normalize_tuple(vector, ["x", "y", "z"]);
  */
-export const extract_tuple = (tuple, mappings) => {
+export const normalize_tuple = (tuple, mappings) => {
 	const index_by_field_name = new Map();
 
 	for (let [idx, field_name] of mappings.entries()) {
@@ -38,4 +38,4 @@ export const extract_tuple = (tuple, mappings) => {
 	return result;
 };
 
-export const extractTuple = extract_tuple;
+export const normalizeTuple = normalize_tuple;
