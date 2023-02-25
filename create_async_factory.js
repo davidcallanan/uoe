@@ -22,7 +22,7 @@ export const create_async_factory = (cls) => {
 
 		const result = obj._call !== undefined ? as_async(obj._call) : obj;
 
-		for (let key of Object.keys(obj)) {
+		for (let key in obj) {
 			if (key.startsWith("_")) {
 				continue;
 			}
