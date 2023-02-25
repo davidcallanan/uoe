@@ -1,3 +1,5 @@
+import { as_async } from "./as_async.js";
+
 /**
  * @example
  * 
@@ -18,17 +20,19 @@ export const create_async_factory = (cls) => {
 		const obj = new cls(...args);
 		obj._init && await obj._init();
 
+		const result = obj._call !== undefined ? as_async(obj._call) : obj;
+
 		for (let key of Object.keys(obj)) {
 			if (key.startsWith("_")) {
 				continue;
 			}
 
 			if (typeof obj[key] === "function") {
-				obj[key] = obj[key].bind(obj);
+				result[key] = result[key].bind(obj);
 			}
 		}
 
-		return obj;
+		return result;
 	};
 };
 
