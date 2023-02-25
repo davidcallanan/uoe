@@ -77,7 +77,7 @@ export const unsuspended_api = (api_like) => {
 	}, {
 		get: (_target, prop) => {
 			if (["then", "catch", "finally"].includes(prop)) {
-				return api_promise[prop];
+				return api_promise[prop].bind(api_promise);
 			}
 
 			return unsuspended_api((async () => {
