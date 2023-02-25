@@ -1,13 +1,36 @@
 import { user_error, internal_error } from "./error.js";
 
 /**
- * Takes in a promise to an async api and returns a wrapped api that can be invoked immediately.
+ * Wraps an api or promise to an api such that the api is immediately available. Properties and methods, including sub-properties of the api and sub-properties of the return-values of methods, are proxied to be immediately accessible before the api has neccesserily been resolved, and before parent properties and return-values of parent methods have been resolved. However, this means that the properties and methods are forced to be async.
  * 
- * An async api is either an object with async functions as its properties, an async function, or both.
+ * @example
  * 
- * All methods are proxied so that they can be invoked immediately. Upon invokation of any method, it will first wait for the underlying api to be ready before proceeding.
+ * const api = unsuspended_api(api_promise);
  * 
- * If the passed-in promise reports errors, these errors will instead be delayed to invocations of the api as internal errors. 
+ * // The following two lines of code are equivalent
+ * await api();
+ * await (await api_promise)();
+ * 
+ * // The following two lines of code are equivalent
+ * await api.property;
+ * await (await api_promise).property;
+ * 
+ * // The following three lines of code are equivalent
+ * await api.method();
+ * await unsuspended_api(await api.method)();
+ * await (await (await api_promise).method)();
+ * 
+ * // The following four lines of code are equivalent
+ * await api.method().property;
+ * await unsuspended_api(await api.method()).property;
+ * await unsuspended_api(await api.method()).property;
+ * await unsuspended_api(unsuspended_api(await api.method)()).property;
+ * await (await (await (await api_promise).method)()).property;
+ * 
+ * // As you can see, unsuspending an api removes a lot of await statements.
+ * // This offers a high degree of flexibility when working with asynchronous code.
+ * 
+ * // TODO: update implementation to match new desired functionality as documented here.
  * 
  * @example
  * 
