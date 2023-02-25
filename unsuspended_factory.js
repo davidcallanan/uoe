@@ -1,9 +1,9 @@
 import { unsuspended_api } from "./unsuspended_api.js"
 
 /**
- * Takes in an async factory to an async api and returns a sync factory for that api, achieved by unsuspending the api instance upon construction (see `unsuspended_api`).
+ * Takes in an async factory for an api and returns a sync factory for that api, achieved by unsuspending the api instance upon construction (see `unsuspended_api`).
  * 
- * The returned factory will suffer from all errors not being reported. If the underlying factory reports errors, these errors will instead be delayed to invocations of the api as internal errors. 
+ * Errors reported during the construction proccess will be delivered later, as described in `unsuspended_api`.
  * 
  * @example
  * 
