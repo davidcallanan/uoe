@@ -73,7 +73,7 @@ export const unsuspended_api = (api_like) => {
 		const api = await get_api(api_promise);
 		return await api(...args);
 	}, {
-		get: (target, prop) => {
+		get: (_target, prop) => {
 			if (["then", "catch", "finally"].includes(prop)) {
 				return api_promise[prop];
 			}
