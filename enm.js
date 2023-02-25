@@ -1,5 +1,10 @@
 const syntactic_sugar = (overall, curr) => new Proxy(curr, {
-	get: (_, prop) => {
+	get: (target, prop) => {
+		if (prop.includes(".")) {
+			const [first, ...rest] = prop.split(".");
+			return target[first][rest];
+		}
+
 		if (overall === undefined) {
 			overall = {};
 		}
@@ -35,7 +40,7 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr, {
  * const bate = enm.fish;
  * draw_animals(tup([pet, bate])({
  *   stroke: enm.no_stroke,
- *   fill: enm.with_fill.gradient(tup([enm.red, enm.blue]))
+ *   fill: enm.with_fill.gradient(tup(enm.red, enm.blue))
  * }));
  */
 export const enm = syntactic_sugar();
