@@ -58,8 +58,8 @@ import { user_error, internal_error } from "./error.js";
  * console.log("triangle drawn");
  */
 
-export const unsuspended_api = (api_like) => {
-	const api_promise = Promise.resolve(api_like);
+export const unsuspended_api = (api_promise_like) => {
+	const api_promise = Promise.resolve(api_promise_like);
 
 	const get_api = async (api_promise) => {
 		try {
