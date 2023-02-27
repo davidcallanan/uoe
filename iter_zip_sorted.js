@@ -18,7 +18,7 @@ export const iter_zip_sorted = function* (compare, ...iterables) {
 			return compare(next.value, min.value) < 0 ? [next_idx, next] : [min_idx, min]
 		});
 
-		yield min;
+		yield min.value;
 		
 		nexts[min_idx] = its[min_idx].next();
 
