@@ -61,18 +61,9 @@ import { user_error, internal_error } from "./error.js";
 export const unsuspended_api = (api_promise_like) => {
 	const api_promise = Promise.resolve(api_promise_like);
 
-	const get_api = async (api_promise) => {
-		try {
-			return await api_promise;
-		} catch (e) {
-			throw internal_error("Unable to initialize API", e);
-		}
-	};
-
 	return new Proxy((...args) => {
 		return unsuspended_api((async () => {
-			const api = await get_api(api_promise);
-			return await api(...args);
+			return await (await api_promise)(...args);
 		})());
 	}, {
 		get: (_target, prop) => {
@@ -81,8 +72,7 @@ export const unsuspended_api = (api_promise_like) => {
 			}
 
 			return unsuspended_api((async () => {
-				const api = await get_api(api_promise);
-				return api[prop];
+				return (await api_promise)[prop];
 			})());
 		},
 	});
