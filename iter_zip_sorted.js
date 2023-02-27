@@ -15,12 +15,18 @@ export const iter_zip_sorted = function* (compare, ...iterables) {
 		}
 
 		let [min_idx, min] = reduce(nexts.entries(), ([min_idx, min]=[], [next_idx, next]) => {
-			if (min_idx === undefined || next.done) {
+			if (min_idx === undefined || min.done) {
 				return [next_idx, next];
+			}
+
+			if (next.done) {
+				return [min_idx, min];
 			}
 
 			return compare(next.value, min.value) < 0 ? [next_idx, next] : [min_idx, min];
 		});
+
+		console.log("BOOP");
 
 		yield min.value;
 		
