@@ -10,20 +10,20 @@ export const iter_zip_sorted = function* (compare, ...iterables) {
 	let nexts = its.map((it) => it.next());
 
 	while (true) {
+		if (nexts.every((next) => next.done)) {
+			break;
+		}
+
 		let [min_idx, min] = reduce(nexts.entries(), ([min_idx, min], [next_idx, next]) => {
 			if (next.done) {
 				return [min_idx, min];
 			}
 
-			return compare(next.value, min.value) < 0 ? [next_idx, next] : [min_idx, min]
-		});
+			return compare(next.value, min.value) < 0 ? [next_idx, next] : [min_idx, min];
+		}, [-1, { value: +Infinity }]);
 
 		yield min.value;
 		
 		nexts[min_idx] = its[min_idx].next();
-
-		if (nexts.every((next) => next.done)) {
-			break;
-		}
 	}
 }
