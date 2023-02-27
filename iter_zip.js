@@ -1,4 +1,4 @@
-export const iter_zip = function*(...iterables) {
+export const iter_zip = function* (...iterables) {
 	let its = iterables.map((iterable) => iterable[Symbol.iterator]());
 
 	while (true) {
