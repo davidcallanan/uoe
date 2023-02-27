@@ -1,3 +1,5 @@
+import { callable } from "./callable.js";
+
 /**
  * Binds the `this` value of a function lazily.
  * 
