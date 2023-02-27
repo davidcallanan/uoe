@@ -1,5 +1,5 @@
 import { as_async } from "./as_async.js";
-import { callable } from "./callable.js";
+import { callable_bound } from "./callable_bound.js";
 
 /**
  * @example
@@ -21,7 +21,7 @@ export const create_async_factory = (cls) => {
 		const obj = new cls(...args);
 		obj._init && await obj._init();
 
-		const result = obj._call !== undefined ? callable(obj, as_async(obj._call)) : obj;
+		const result = obj._call !== undefined ? callable_bound(obj, as_async(obj._call)) : obj;
 
 		for (const key in result) {
 			if (typeof key === "function") {
