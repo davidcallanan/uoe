@@ -7,7 +7,7 @@ import { user_error, internal_error } from "./error.js";
  * 
  * If errors are reported by the passed-in promise, these errors will instead be delivered as internal errors inside any promises obtained from the wrapped api.
  * 
- * Warning: The `then`, `catch` and `finally` properties must not be defined on the underlying api become as this makes the underlying api promise-like, while also conflicting with our implementation of the promise interface at every level.
+ * Warning: The `then`, `catch` and `finally` properties must not be defined on the underlying api as this makes the underlying api promise-like, while also conflicting with our implementation of the promise interface at every level.
  * Doing this will cause bizarre behaviour which may be difficult to track down.
  * 
  * @example
@@ -72,7 +72,13 @@ export const unsuspended_api = (api_promise_like) => {
 			}
 
 			return unsuspended_api((async () => {
-				return (await api_promise)[prop];
+				const api = await api_promise;
+
+				if (typeof api[prop] === "function") {
+					return api[prop].bind(api);
+				}
+
+				return api[prop];
 			})());
 		},
 	});
