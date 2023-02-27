@@ -64,7 +64,7 @@ export const unsuspended_api = (api_promise_like) => {
 	return new Proxy((...args) => {
 		return unsuspended_api((async () => {
 			const api = await api_promise;
-			return await api.apply(api, args);
+			return await Reflect.apply(api, api, args);
 		})());
 	}, {
 		get: (_target, prop) => {

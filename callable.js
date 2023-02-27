@@ -7,7 +7,7 @@
 export const callable = (obj, call) => {
 	if (typeof obj === "function") {
 		return new Proxy(obj, {
-			apply: (_target, this_value, args) => call.apply(this_value, args),
+			apply: (_target, this_value, args) => Reflect.apply(call, this_value, args),
 		});
 	}
 
