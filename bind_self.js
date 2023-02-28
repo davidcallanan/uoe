@@ -6,5 +6,6 @@ import { lazy_bind } from "./lazy_bind.js";
  * This is useful for creating callable objects where `this` refers to the callable object itself.
  */
 export const bind_self = (func) => {
-	return lazy_bind(func, () => func);
+	var result = lazy_bind(func, () => result);
+	return result;
 };
