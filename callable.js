@@ -1,3 +1,5 @@
+const WARN_ON_CALLABLE_NON_FUNCTION = true;
+
 /**
  * Makes an object callable.
  * 
@@ -9,6 +11,10 @@ export const callable = (obj, call) => {
 		return new Proxy(obj, {
 			apply: (_target, this_value, args) => Reflect.apply(call, this_value, args),
 		});
+	}
+
+	if (WARN_ON_CALLABLE_NON_FUNCTION) {
+		console.warn("Forcefully making non-function callable.", obj, call);
 	}
 
 	return new Proxy(call, {

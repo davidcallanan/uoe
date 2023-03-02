@@ -1,5 +1,6 @@
 import { as_async } from "./as_async.js";
 import { callable_bound } from "./callable_bound.js";
+import { named_function } from "./named_function.js";
 
 /**
  * @example
@@ -17,17 +18,43 @@ import { callable_bound } from "./callable_bound.js";
  * export const create_api = create_async_factory(Api);
  */
 export const create_async_factory = (cls) => {
+	if (cls.prototype._call !== undefined) {
+		// This makes debugging nicer because the original object will be a function and so it will not wrapped by a function down the road (which is otherwise accomplished in `callable` using proxies).
+
+		const orig_cls = cls;
+		
+		cls = named_function(orig_cls.name, function (...args) {
+			const obj = new orig_cls(...args);
+			const result = new Function();
+			Object.setPrototypeOf(result, cls.prototype);
+			Object.assign(result, obj);
+			return result;
+		});
+
+		orig_cls.prototype.constructor = cls;
+		cls.prototype = orig_cls.prototype;
+		Object.setPrototypeOf(cls.prototype, Function.prototype);
+	}
+
 	return async (...args) => {
 		const obj = new cls(...args);
 		obj._init && await obj._init();
 
-		const result = obj._call !== undefined ? callable_bound(obj, as_async(obj._call)) : obj;
+		const result = obj._call !== undefined
+			? callable_bound(
+				obj,
+				as_async(function() { return obj._call() })
+			)
+			: obj
+		;
 
-		for (const key in result) {
-			if (typeof key === "function") {
-				result[key] = result[key].bind(result);
-			}
-		}
+		return new Proxy(result, {
+			get(target, key) {
+				if (typeof key === "function") {
+					return target[key].bind(target);
+				}
+			},
+		});
 		
 		return result;
 	};
