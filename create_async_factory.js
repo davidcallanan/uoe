@@ -1,5 +1,5 @@
 import { as_async } from "./as_async.js";
-import { callable_bound } from "./callable_bound.js";
+import { bind_self } from "./bind_self.js";
 import { named_function } from "./named_function.js";
 
 /**
@@ -40,15 +40,15 @@ export const create_async_factory = (cls) => {
 		const obj = new cls(...args);
 		obj._init && await obj._init();
 
-		const result = obj._call !== undefined
-			? callable_bound(
+		const adjusted_obj = obj._call !== undefined
+			? callable(
 				obj,
-				as_async(function() { return obj._call() })
+				as_async(function(...args) { return obj._call(...args) })
 			)
 			: obj
 		;
 
-		return new Proxy(result, {
+		const result = new Proxy(adjusted_obj, {
 			get(target, key) {
 				if (typeof key === "function") {
 					return target[key].bind(target);
@@ -56,7 +56,7 @@ export const create_async_factory = (cls) => {
 			},
 		});
 		
-		return result;
+		return typeof result === "function" ? bind_self(result) : result;
 	};
 };
 
