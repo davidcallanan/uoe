@@ -1,5 +1,6 @@
 import { as_async } from "./as_async.js";
 import { bind_self } from "./bind_self.js";
+import { callable } from "./callable.js";
 import { named_function } from "./named_function.js";
 
 /**
