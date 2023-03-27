@@ -1,10 +1,10 @@
 export const switch_enum = (object, cases) => {
-	if (cases[object.type] === undefined) {
+	if (cases[object.sym] === undefined) {
 		console.warn("No case for", object);
-		throw new Error(`No implementation found for \`${object.type}\``);
+		throw new Error(`No implementation found for \`${object.sym}\``);
 	}
 
-	return cases[object.type](object.value);
+	return cases[object.sym](object.data);
 };
 
 export const switchEnum = switch_enum;

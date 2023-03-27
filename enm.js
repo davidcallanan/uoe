@@ -1,6 +1,6 @@
 const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 	get: (target, prop) => {
-		if (["type", "value"].includes(prop)) {
+		if (["sym", "data"].includes(prop)) {
 			return target[prop];
 		}
 
@@ -13,11 +13,11 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 			overall = {};
 		}
 
-		const result = (value) => {
+		const result = (data) => {
 			if (curr === undefined) {
-				result.value = value;
+				result.data = data;
 			} else {
-				curr.value.value = value;
+				curr.data.data = data;
 			}
 
 			return result;
@@ -26,12 +26,12 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 		Object.assign(result, overall);
 
 		if (curr === undefined) {
-			result.type = prop;
+			result.sym = prop;
 		} else {
-			curr.value = { type: prop };
+			curr.data = { sym: prop };
 		}
 
-		return syntactic_sugar(result, curr === undefined ? result : curr.value)
+		return syntactic_sugar(result, curr === undefined ? result : curr.data)
 	},
 });
 
