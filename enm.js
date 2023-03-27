@@ -1,5 +1,9 @@
 const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 	get: (target, prop) => {
+		if (["type", "value"].includes(prop)) {
+			return target[prop];
+		}
+
 		if (prop.includes(".")) {
 			const [first, ...rest] = prop.split(".");
 			return target[first][rest];
