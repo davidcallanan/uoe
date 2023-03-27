@@ -1,4 +1,4 @@
-export const map = function* (iterable, mapper) {
+export const iter_map = function* (iterable, mapper) {
 	let i = 0;
 
 	for (const item of iterable) {
