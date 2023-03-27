@@ -94,8 +94,14 @@ const create_map = (input) => {
  * console.log(await person.name);
  * console.log(await person.age);
  * console.log(await person.personality);
- */
+*/
 export const map = (arg) => {
+	if (Array.isArray(arg)) {
+		// TODO: Parse template expressions correctly.
+		const input = arg.join("");
+		return create_map(input);
+	}
+
 	if (typeof arg === "string") {
 		const input = arg;
 		return create_map(input);
