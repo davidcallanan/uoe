@@ -51,9 +51,11 @@ export const create_async_factory = (cls) => {
 
 		const result = new Proxy(adjusted_obj, {
 			get(target, key) {
-				if (typeof key === "function") {
+				if (typeof target[key] === "function") {
 					return target[key].bind(target);
 				}
+
+				return target[key];
 			},
 		});
 		
