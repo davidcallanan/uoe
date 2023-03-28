@@ -13,15 +13,17 @@ const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]
 const SEMI = withSkippers(";");
 const STRING = withSkippers(mapData(/^\"(.*?)\"/, data => data.groups[0]));
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
+const CONSTANT = withSkippers(mapData(/^\:\!CONSTANT\$[0-9]+/, data => data.groups.all.split("$")[1]));
 const SYMBOL = withSkippers(mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1)));
 
 // RULES
 
 const expression = mapData(
 	or(
-		STRING,
-		INT,
-		mapData(SYMBOL, data => ({
+		mapData(STRING, data => () => data),
+		mapData(INT, data => () => data),
+		mapData(CONSTANT, data => (ctx) => ctx.constants[data]),
+		mapData(SYMBOL, data => () => ({
 			sym: data,
 		})),
 	),
@@ -56,7 +58,11 @@ const map_inner = mapData(
 	}),
 );
 
-const create_map = (input) => {
+const create_map = (input, constants) => {
+	const ctx = {
+		constants,
+	};
+	
 	const result = map_inner(input);
 
 	if (result.success === false || result.input !== "") {
@@ -72,7 +78,7 @@ const create_map = (input) => {
 		const statement = result.data.statements.find(statement => statement.statement.symbol === inp.sym);
 
 		if (statement) {
-			return statement.statement.value.expression;
+			return statement.statement.value.expression(ctx);
 		}
 
 		return undefined;
@@ -94,16 +100,27 @@ const create_map = (input) => {
  * console.log(await person.age);
  * console.log(await person.personality);
 */
-export const map = (arg) => {
+export const map = (arg, ...expressions) => {
 	if (Array.isArray(arg)) {
-		// TODO: Parse template expressions correctly.
-		const input = arg.join("");
-		return create_map(input);
+		// This is a tagged template literal.
+
+		let input = "";
+
+		for (const [i, segment] of arg.entries()) {
+			input += segment;
+
+			if (i < expressions.length) {
+				input += `:!CONSTANT\$${i}`;
+			}
+		}
+
+		const constants = expressions;
+		return create_map(input, constants);
 	}
 
 	if (typeof arg === "string") {
 		const input = arg;
-		return create_map(input);
+		return create_map(input, []);
 	}
 
 	return uly_map(arg);
