@@ -1,3 +1,5 @@
+import { create_promise } from "./create_promise.ts";
+
 /**
  * Creates a pub-sub where values are discarded for a subscriber if the subscriber is not actively consuming values.
  * However, the latest value will not be discarded and will remain available for when consumption resumes.
