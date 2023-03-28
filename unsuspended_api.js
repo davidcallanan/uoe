@@ -53,7 +53,7 @@ import { user_error, internal_error } from "./error.js";
  *   };
  * };
  * 
- * const opengl_api = unsuspend_api(create_opengl_api());
+ * const opengl_api = unsuspended_api(create_opengl_api());
  * await opengl_api.draw_triangle();
  * console.log("triangle drawn");
  */
@@ -64,6 +64,11 @@ export const unsuspended_api = (api_promise_like) => {
 	return new Proxy((...args) => {
 		return unsuspended_api((async () => {
 			const api = await api_promise;
+
+			if (typeof api !== "function") {
+				throw new TypeError(`${api} is not a function`);
+			}
+
 			return await Reflect.apply(api, api, args);
 		})());
 	}, {
