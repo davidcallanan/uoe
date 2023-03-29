@@ -1,6 +1,6 @@
 import { enm } from "./enm.js";
 import { is_enm } from "./is_enm.js";
-import { unpack_promise } from "./unpack_promise.js";
+import { named_function } from "./named_function.js";
 
 const symbol_is_map = Symbol("is_map");
 
@@ -25,13 +25,12 @@ export const map = (get) => {
 
 	let get_leaf = cached(() => Promise.resolve(get(undefined)));
 
-	const raw_map = (input) => {
+	const raw_map = named_function(get.name, (input) => {
 		if (input === undefined) {
-			return final_map;
+			return get_leaf();
 		}
 		
 		if (is_enm(input) && input.data !== undefined) {
-			console.log("accessing symbol", input.sym, input.data);
 			return raw_map(enm[input.sym])(input.data);
 		}
 
@@ -41,16 +40,20 @@ export const map = (get) => {
 			const output = await get_output();
 
 			if (input === undefined) {
+				if (is_map(output)) {
+					return undefined;
+				}
+
 				return output;
 			}
 
 			if (is_map(output)) {
-				return output(input);
+				return await output(input)();
 			}
 
 			return undefined;
 		});
-	};
+	});
 
 	final_map = new Proxy(raw_map, {
 		get: (_target, prop) => {
@@ -59,10 +62,10 @@ export const map = (get) => {
 			}
 
 			if (prop === "then") {
-				// Turns the map into a "thenable" for obtaining the leaf value.
-				// One must use `Promise.resolve` if access to `catch` or `finally` is needed.
-				// If access to the underlying `then` enum is needed, you must explicitly call the map with this enum instead.
-				return unpack_promise(get_leaf()).then;
+				// Due to nested promise flattening, we cannot allow a map to be promise-like.
+				// We must forcefully undefine the `then` property, as otherwise it would return another map which would classify it as a "thenable".
+				// If access to the `then` enum is needed, you must explicitly call the map with this enum instead (`enm.$then`).
+				return undefined;
 			}
 
 			return raw_map(enm[prop]);

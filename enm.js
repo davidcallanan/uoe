@@ -4,6 +4,14 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 			return target[prop];
 		}
 
+		if (prop === "then") {
+			return undefined;
+		}
+
+		if (prop === "$then") {
+			prop = "then";
+		}
+
 		if (prop.includes(".")) {
 			const [first, ...rest] = prop.split(".");
 			return target[first][rest];
