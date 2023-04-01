@@ -1,4 +1,4 @@
-import { mapData, join, opt, multi, opt_multi, or } from "./blurp.js";
+import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 import { map as uly_map } from "../map.js";
 
 // TOKENS
@@ -15,8 +15,12 @@ const STRING = withSkippers(mapData(/^\"(.*?)\"/, data => data.groups[0]));
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
 const CONSTANT = withSkippers(mapData(/^\:\!CONSTANT\$[0-9]+/, data => data.groups.all.split("$")[1]));
 const SYMBOL = withSkippers(mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1)));
+const LBRACE = withSkippers("{");
+const RBRACE = withSkippers("}");
 
 // RULES
+
+const full_map = declare();
 
 const expression = mapData(
 	or(
@@ -26,6 +30,7 @@ const expression = mapData(
 		mapData(SYMBOL, data => () => ({
 			sym: data,
 		})),
+		mapData(full_map, data => (ctx) => create_map_from_node(data, ctx)),
 	),
 	data => ({
 		type: "expression",
@@ -58,6 +63,27 @@ const map_inner = mapData(
 	}),
 );
 
+full_map.define(mapData(
+	join(LBRACE, map_inner, RBRACE),
+	data => data[1],
+));
+
+const create_map_from_node = (result, ctx) => {
+	return uly_map((inp) => {
+		if (inp === undefined) {
+			return undefined;
+		}
+
+		const statement = result.statements.find(statement => statement.statement.symbol === inp.sym);
+
+		if (statement) {
+			return statement.statement.value.expression(ctx);
+		}
+
+		return undefined;
+	});
+}
+
 const create_map = (input, constants) => {
 	const ctx = {
 		constants,
@@ -70,19 +96,7 @@ const create_map = (input, constants) => {
 		throw `Failed to parse map`;
 	}
 
-	return uly_map((inp) => {
-		if (inp === undefined) {
-			return undefined;
-		}
-
-		const statement = result.data.statements.find(statement => statement.statement.symbol === inp.sym);
-
-		if (statement) {
-			return statement.statement.value.expression(ctx);
-		}
-
-		return undefined;
-	});
+	return create_map_from_node(result.data, ctx);
 };
 
 /**
