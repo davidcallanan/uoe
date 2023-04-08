@@ -9,12 +9,15 @@ const MULTILINE_COMMENT   = mapData(/^\s*\/\*(.*?)\*\//s, data => data.groups[0]
 const SKIPPERS = opt(multi(or(SPACE, SINGLELINE_COMMENT, MULTILINE_COMMENT)));
 
 const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]);
+const withLeftSkippers = (p) => mapData(join(SKIPPERS, p), data => data[1]);
+const withRightSkippers = (p) => mapData(join(p, SKIPPERS), data => data[0]);
 
 const SEMI = withSkippers(";");
 const STRING = withSkippers(mapData(/^\"(.*?)\"/, data => data.groups[0]));
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
 const CONSTANT = withSkippers(mapData(/^\:\!CONSTANT\$[0-9]+/, data => data.groups.all.split("$")[1]));
 const SYMBOL = withSkippers(mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1)));
+const BARE_SYMBOL = mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1));
 const LBRACE = withSkippers("{");
 const RBRACE = withSkippers("}");
 
@@ -22,14 +25,34 @@ const RBRACE = withSkippers("}");
 
 const full_map = declare();
 
+const symbol_extension = declare();
+
+symbol_extension.define(mapData(
+	join(BARE_SYMBOL, opt(symbol_extension)),
+	data => (ctx) => ({
+		sym: data[0],
+		...data[1] && {
+			data: data[1](ctx),
+		},
+	}),
+));
+
+const symbol = mapData(
+	join(BARE_SYMBOL, opt(symbol_extension)),
+	data => (ctx) => ({
+		sym: data[0],
+		...data[1] && {
+			data: data[1](ctx),
+		},
+	}),
+);
+
 const expression = mapData(
 	or(
 		mapData(STRING, data => () => data),
 		mapData(INT, data => () => data),
 		mapData(CONSTANT, data => (ctx) => ctx.constants[data]),
-		mapData(SYMBOL, data => () => ({
-			sym: data,
-		})),
+		symbol,
 		mapData(full_map, data => (ctx) => create_map_from_node(data, ctx)),
 	),
 	data => ({
