@@ -92,15 +92,27 @@ full_map.define(mapData(
 ));
 
 const create_map_from_node = (result, ctx) => {
+	const mapping = new Map();
+
+	for (const { statement } of result.statements) {
+		if (statement.type === "symbol_mapping") {
+			if (mapping.get(statement.symbol) !== undefined) {
+				throw `TODO: merge symbol mappings ${statement.symbol}`;
+			} else {
+				mapping.set(statement.symbol, statement.value.expression);
+			}
+		}
+	}
+
 	return uly_map((inp) => {
 		if (inp === undefined) {
 			return undefined;
 		}
 
-		const statement = result.statements.find(statement => statement.statement.symbol === inp.sym);
+		const entry = mapping.get(inp.sym);
 
-		if (statement) {
-			return statement.statement.value.expression(ctx);
+		if (entry !== undefined) {
+			return entry(ctx);
 		}
 
 		return undefined;
