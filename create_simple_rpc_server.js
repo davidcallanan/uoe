@@ -8,27 +8,39 @@ export const create_simple_rpc_server = (express, cors, intf) => {
 	app.use(express.json());
 	app.use(cors()); // allow all cors (safe provided we don't maintain state.....)
 	
-	let methods = [];
+	///////////
+	// Change: possible methods are technically part of the typings, so this will no longer be incorporated directly in the runtime portion of the code.
+
+	// let methods = [];
 	
-	for (let [name, func] of Object.entries(intf)) {
-		if (typeof func !== "function") {
-			continue;
-		}
+	// for (let [name, func] of Object.entries(intf)) {
+	// 	if (typeof func !== "function") {
+	// 		continue;
+	// 	}
 	
-		methods.push(name);
-	}
-	
-	app.get("/methods", (req, res) => {
-		res.json({ methods });
-	});
+	// 	methods.push(name);
+	// }
+
+	// app.get("/methods", (req, res) => {
+	// 	res.json({ methods });
+	// });
+	///////////
 	
 	app.post("/rpc", async (req, res) => {
+		// TODO: this is legacy invocation format.
+		// new format uses a single `input` value which can be an enum.
+		// this must be changed soon.
+
 		let { method, args } = req.body;
 		let result, error;
 	
 		try {
 			result = await intf[method](...args);
 		} catch (e) {
+			// TODO: this is legacy error format.
+			// an enum variant for errors can be returned.
+			// only errors that are automatically propogated are exceptions, that is, internal errors.
+
 			if (["UserError", "StateError"].includes(e.name)) {
 				error = {
 					name: e.name,
