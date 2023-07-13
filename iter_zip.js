@@ -1,5 +1,5 @@
 export const iter_zip = function* (...iterables) {
-	let its = iterables.map((iterable) => iterable[Symbol.iterator]());
+	const its = iterables.map((iterable) => iterable[Symbol.iterator]());
 
 	while (true) {
 		let nexts = its.map((it) => it.next());

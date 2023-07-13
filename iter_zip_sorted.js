@@ -6,8 +6,8 @@ import { reduce } from "./reduce.js";
  * A comparison function must be provided and it is assumed that the provided iterables are already individually sorted with respect to this comparison function.
  */
 export const iter_zip_sorted = function* (compare, ...iterables) {
-	let its = iterables.map((iterable) => iterable[Symbol.iterator]());
-	let nexts = its.map((it) => it.next());
+	const its = iterables.map((iterable) => iterable[Symbol.iterator]());
+	const nexts = its.map((it) => it.next());
 
 	while (true) {
 		if (nexts.every((next) => next.done)) {
