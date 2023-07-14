@@ -4,7 +4,7 @@ export const iter_arr_reverse = (arr) => {
 			let idx = arr.length;
 
 			return {
-				next() {
+				next: () => {
 					idx--;
 
 					return {

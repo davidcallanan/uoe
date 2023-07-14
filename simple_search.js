@@ -6,6 +6,9 @@ const count_once = (string, substring) => {
 	return string.includes(substring) ? 1 : 0;
 };
 
+/**
+ * Warning: The past-in objects are mutated, please pass in a copy if necessary.
+ */
 export const simple_search = (array, query, options) => {
 	options ??= {};
 	options.portion_size ??= 4;
@@ -16,8 +19,6 @@ export const simple_search = (array, query, options) => {
 	options.max_results ??= 5;
 	
 	const { portion_size, keys, max_results } = options;
-	
-	array = [...array];
 
 	let portions = [];
 
