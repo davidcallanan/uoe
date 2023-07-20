@@ -58,7 +58,7 @@ import { user_error, internal_error } from "./error.js";
  * console.log("triangle drawn");
  */
 
-export const unsuspended_api = (api_promise_like) => {
+export const unsuspended_api = (api_promise_like, ctx) => {
 	const api_promise = Promise.resolve(api_promise_like);
 
 	return new Proxy((...args) => {
@@ -66,6 +66,10 @@ export const unsuspended_api = (api_promise_like) => {
 			const api = await api_promise;
 
 			if (typeof api !== "function") {
+				if (ctx?.$$$_READING_PROP) {
+					throw new TypeError(`${api} is not a function (reading property ${ctx.$$$_READING_PROP})`);
+				}
+				
 				throw new TypeError(`${api} is not a function`);
 			}
 
@@ -85,7 +89,9 @@ export const unsuspended_api = (api_promise_like) => {
 				}
 
 				return api[prop];
-			})());
+			})(), {
+				$$$_READING_PROP: prop,
+			});
 		},
 	});
 };
