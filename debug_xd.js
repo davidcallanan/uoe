@@ -1,4 +1,4 @@
-const extra_data = new Map();
+const extra_data = new WeakMap();
 
 /**
  * This function allows you to attach extra data to any object for temporary debugging purposes.

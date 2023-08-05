@@ -21,24 +21,100 @@ const OR = withSkippers("||");
 const NOT = withSkippers("!");
 const LPAREN = withSkippers("(");
 const RPAREN = withSkippers(")");
+const TRUE = withSkippers("true");
+const FALSE = withSkippers("false");
 // Use JavaScript when other operations are needed.
 
 // RULES
 
-const expression = declare();
-
 const atom = declare();
+const crystal = declare();
+const expression = declare();
 
 atom.define(or(
 	mapData(join(NOT, atom), data => () => !data[1]()),
 	mapData(FLOAT, data => () => data),
 	mapData(INT, data => () => data),
 	mapData(CONSTANT, data => (ctx) => ctx.constants[data]),
+	mapData(TRUE, data => () => true),
+	mapData(FALSE, data => () => false),
 	mapData(join(LPAREN, expression, RPAREN), data => () => data[1]()),
 ));
 
-expression.define(
+crystal.define(or(
+	mapData(multi(join(or(PLUS, MINUS), atom)), data => (ctx) => {
+		let result;
+		
+		for (let i = 0; i < data.length; i++) {
+			const op = data[i][0];
+			const value = data[i][1]();
+
+			if (i == 0) {
+				if (typeof value === "number") {
+					result = 0;
+				} else {
+					result = 0n;
+				}
+			}
+			
+			if (op === "+") {
+				result += value;
+			} else if (op === "-") {
+				result -= value;
+			}
+		}
+
+		return result;
+	}),
+	mapData(multi(join(or(MULT, DIV), atom)), data => (ctx) => {
+		let result;
+		
+		for (let i = 0; i < data.length; i++) {
+			const op = data[i][0];
+			const value = data[i][1]();
+
+			if (i == 0) {
+				if (typeof value === "number") {
+					result = 1;
+				} else {
+					result = 1n;
+				}
+			}
+			
+			if (op === "*") {
+				result *= value;
+			} else if (op === "/") {
+				result /= value;
+			}
+		}
+
+		return result;
+	}),
+	mapData(multi(join(AND, atom)), data => (ctx) => {
+		let result = true;
+		
+		for (let i = 0; i < data.length; i++) {
+			const value = data[i][1]();
+			result &&= value;
+		}
+
+		return result;
+	}),
+	mapData(multi(join(OR, atom)), data => (ctx) => {
+		let result = false;
+		
+		for (let i = 0; i < data.length; i++) {
+			const value = data[i][1]();
+			result ||= value;
+		}
+
+		return result;
+	}),
 	atom,
+));
+
+expression.define(
+	crystal,
 );
 
 const run_expr = (input, constants) => {
@@ -61,6 +137,7 @@ const run_expr = (input, constants) => {
  * 
  * @example
  * 
+ * // Not implemented.
  * exp("1 + 2"); // 3
  * 
  * @example
