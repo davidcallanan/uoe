@@ -18,6 +18,12 @@ const MULT = withSkippers("*");
 const DIV = withSkippers("/");
 const AND = withSkippers("&&");
 const OR = withSkippers("||");
+const EQ = withSkippers("==");
+const NEQ = withSkippers("!=");
+const LT = withSkippers("<");
+const GT = withSkippers(">");
+const LTE = withSkippers("<=");
+const GTE = withSkippers(">=");
 const NOT = withSkippers("!");
 const LPAREN = withSkippers("(");
 const RPAREN = withSkippers(")");
@@ -29,6 +35,7 @@ const FALSE = withSkippers("false");
 
 const atom = declare();
 const crystal = declare();
+const pistol = declare();
 const expression = declare();
 
 atom.define(or(
@@ -36,9 +43,101 @@ atom.define(or(
 	mapData(FLOAT, data => () => data),
 	mapData(INT, data => () => data),
 	mapData(CONSTANT, data => (ctx) => ctx.constants[data]),
-	mapData(TRUE, data => () => true),
-	mapData(FALSE, data => () => false),
-	mapData(join(LPAREN, expression, RPAREN), data => () => data[1]()),
+	mapData(TRUE, () => () => true),
+	mapData(FALSE, () => () => false),
+	mapData(join(LPAREN, expression, RPAREN), data => (ctx) => data[1](ctx)),
+));
+
+pistol.define(or(
+	mapData(join(atom, multi(join(or(PLUS, MINUS), atom))), data => (ctx) => {
+		let result = data[0](ctx);
+
+		for (let i = 0; i < data[1].length; i++) {
+			const op = data[1][i][0];
+			const value = data[1][i][1](ctx);
+
+			if (op == "+") {
+				result += value;
+			} else if (op == "-") {
+				result -= value;
+			}
+		}
+
+		return result;
+	}),
+	mapData(join(atom, multi(join(or(MULT, DIV), atom))), data => (ctx) => {
+		let result = data[0](ctx);
+
+		for (let i = 0; i < data[1].length; i++) {
+			const op = data[1][i][0];
+			const value = data[1][i][1](ctx);
+
+			if (op == "*") {
+				result *= value;
+			} else if (op == "/") {
+				result /= value;
+			}
+		}
+
+		return result;
+	}),
+	mapData(join(atom, multi(join(AND, atom))), data => (ctx) => {
+		let result = data[0](ctx);
+
+		for (let i = 0; i < data[1].length; i++) {
+			result = result && data[1][i][1](ctx);
+		}
+
+		return result;
+	}),
+	mapData(join(atom, multi(join(OR, atom))), data => (ctx) => {
+		let result = data[0](ctx);
+
+		for (let i = 0; i < data[1].length; i++) {
+			result = result || data[1][i][1](ctx);
+		}
+
+		return result;
+	}),
+	mapData(join(atom, multi(join(or(EQ, NEQ, GTE, LTE, GT, LT), atom))), data => (ctx) => {
+		let prev_value = data[0](ctx);
+
+		for (let i = 0; i < data[1].length; i++) {
+			const op = data[1][i][0];
+			const value = data[1][i][1](ctx);
+
+			if (op == "==") {
+				if (!(prev_value === value)) {
+					return false;
+				}
+			} else if (op == "!=") {
+				if (!(prev_value !== value)) {
+					return false;
+				}
+			} else if (op == ">") {
+				if (!(prev_value > value)) {
+					return false;
+				}
+			} else if (op == "<") {
+				if (!(prev_value < value)) {
+					return false;
+				}
+			} else if (op == ">=") {
+				if (!(prev_value >= value)) {
+					return false;
+				}
+			} else if (op == "<=") {
+				if (!(prev_value <= value)) {
+					return false;
+				}
+			}
+
+			prev_value = value;
+		}
+
+		return true;
+	}),
+	atom,
 ));
 
 crystal.define(or(
@@ -47,7 +146,7 @@ crystal.define(or(
 		
 		for (let i = 0; i < data.length; i++) {
 			const op = data[i][0];
-			const value = data[i][1]();
+			const value = data[i][1](ctx);
 
 			if (i == 0) {
 				if (typeof value === "number") {
@@ -71,7 +170,7 @@ crystal.define(or(
 		
 		for (let i = 0; i < data.length; i++) {
 			const op = data[i][0];
-			const value = data[i][1]();
+			const value = data[i][1](ctx);
 
 			if (i == 0) {
 				if (typeof value === "number") {
@@ -94,7 +193,7 @@ crystal.define(or(
 		let result = true;
 		
 		for (let i = 0; i < data.length; i++) {
-			const value = data[i][1]();
+			const value = data[i][1](ctx);
 			result &&= value;
 		}
 
@@ -104,13 +203,13 @@ crystal.define(or(
 		let result = false;
 		
 		for (let i = 0; i < data.length; i++) {
-			const value = data[i][1]();
+			const value = data[i][1](ctx);
 			result ||= value;
 		}
 
 		return result;
 	}),
-	atom,
+	pistol,
 ));
 
 expression.define(
@@ -137,7 +236,6 @@ const run_expr = (input, constants) => {
  * 
  * @example
  * 
- * // Not implemented.
  * exp("1 + 2"); // 3
  * 
  * @example
