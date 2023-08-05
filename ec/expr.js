@@ -240,7 +240,7 @@ const run_expr = (input, constants) => {
  * 
  * @example
  * 
- * const new_balance = exp`
+ * const new_balance = expr`
  *   + ${initial_balance}
  *   + ${sales}
  *   - ${expenses}
@@ -248,7 +248,7 @@ const run_expr = (input, constants) => {
  * 
  * @example
  * 
- * const F = exp`
+ * const F = expr`
  *   * ${gravitational_constant}
  *   * ${mass_a}
  *   * ${mass_b}
@@ -257,7 +257,7 @@ const run_expr = (input, constants) => {
  * 
  * @example
  * 
- * if (exp`
+ * if (expr`
  *   && ${is_eligible}
  *   && (
  *     || ${is_of_age}
@@ -269,7 +269,18 @@ export const expr = (arg, ...expressions) => {
 	if (Array.isArray(arg)) {
 		// This is a tagged template literal.
 
-		throw "TODO";
+		let input = "";
+
+		for (let [i, segment] of arg.entries()) {
+			input += segment;
+
+			if (i < expressions.length) {
+				input += `:!CONSTANT\$${i}`;
+			}
+		}
+
+		const constants = expressions;
+		return run_expr(input, constants);
 	}
 
 	const input = arg;
