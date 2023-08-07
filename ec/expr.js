@@ -11,9 +11,10 @@ const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]
 
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
 const FLOAT = withSkippers(mapData(/^\d+\.\d+/, data => parseFloat(data.groups.all)));
-const CONSTANT = withSkippers(mapData(/^\:\!CONSTANT\$[0-9]+/, data => data.groups.all.split("$")[1]));
-const SYMBOL = withSkippers(mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1)));
+const BARE_CONSTANT = mapData(/^\:\!CONSTANT\$[0-9]+/, data => data.groups.all.split("$")[1]);
+const CONSTANT = withSkippers(BARE_CONSTANT);
 const BARE_SYMBOL = mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1));
+const SYMBOL = withSkippers(BARE_SYMBOL);
 const PLUS = withSkippers("+");
 const MINUS = withSkippers("-");
 const MULT = withSkippers("*");
@@ -41,15 +42,20 @@ const crystal = declare();
 const pistol = declare();
 const expression = declare();
 
-symbol_extension.define(mapData(
-	join(BARE_SYMBOL, opt(symbol_extension)),
-	data => (ctx) => ({
-		sym: data[0],
-		...data[1] && {
-			data: data[1](ctx),
-		},
-	}),
-));
+symbol_extension.define(
+	or(
+		mapData(
+			join(BARE_SYMBOL, opt(symbol_extension)),
+			data => (ctx) => ({
+				sym: data[0],
+				...data[1] && {
+					data: data[1](ctx),
+				},
+			}),
+		),
+		mapData(BARE_CONSTANT, data => (ctx) => ctx.constants[data]),
+	),
+);
 
 const symbol = mapData(
 	join(BARE_SYMBOL, opt(symbol_extension)),
