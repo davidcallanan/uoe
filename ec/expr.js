@@ -12,6 +12,8 @@ const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
 const FLOAT = withSkippers(mapData(/^\d+\.\d+/, data => parseFloat(data.groups.all)));
 const CONSTANT = withSkippers(mapData(/^\:\!CONSTANT\$[0-9]+/, data => data.groups.all.split("$")[1]));
+const SYMBOL = withSkippers(mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1)));
+const BARE_SYMBOL = mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1));
 const PLUS = withSkippers("+");
 const MINUS = withSkippers("-");
 const MULT = withSkippers("*");
@@ -33,16 +35,38 @@ const FALSE = withSkippers("false");
 
 // RULES
 
+const symbol_extension = declare();
 const atom = declare();
 const crystal = declare();
 const pistol = declare();
 const expression = declare();
+
+symbol_extension.define(mapData(
+	join(BARE_SYMBOL, opt(symbol_extension)),
+	data => (ctx) => ({
+		sym: data[0],
+		...data[1] && {
+			data: data[1](ctx),
+		},
+	}),
+));
+
+const symbol = mapData(
+	join(BARE_SYMBOL, opt(symbol_extension)),
+	data => (ctx) => ({
+		sym: data[0],
+		...data[1] && {
+			data: data[1](ctx),
+		},
+	}),
+);
 
 atom.define(or(
 	mapData(join(NOT, atom), data => () => !data[1]()),
 	mapData(FLOAT, data => () => data),
 	mapData(INT, data => () => data),
 	mapData(CONSTANT, data => (ctx) => ctx.constants[data]),
+	symbol,
 	mapData(TRUE, () => () => true),
 	mapData(FALSE, () => () => false),
 	mapData(join(LPAREN, expression, RPAREN), data => (ctx) => data[1](ctx)),
