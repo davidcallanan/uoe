@@ -264,10 +264,17 @@ expression.define(
 	withSkippers(crystal),
 );
 
+const cache = new Map();
+
 const run_expr = (input, constants) => {
 	const ctx = {
 		constants,
 	};
+
+	if (cache.has(input)) {
+		const result = cache.get(input);
+		return result.data(ctx);
+	}
 		
 	const result = expression(input);
 	
@@ -275,6 +282,8 @@ const run_expr = (input, constants) => {
 		console.error(result);
 		throw `Failed to parse expr`;
 	}
+
+	cache.set(input, result);
 	
 	return result.data(ctx);
 };
