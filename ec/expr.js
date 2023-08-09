@@ -11,7 +11,7 @@ const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]
 
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
 const FLOAT = withSkippers(mapData(/^\d+\.\d+/, data => parseFloat(data.groups.all)));
-const BARE_CONSTANT = mapData(/^\:\!CONSTANT\$[0-9]+/, data => data.groups.all.split("$")[1]);
+const BARE_CONSTANT = mapData(/^\:\!CONSTANT\$[0-9]\!+/, data => data.groups.all.split("$")[1].split("!")[0]);
 const CONSTANT = withSkippers(BARE_CONSTANT);
 const BARE_SYMBOL = mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1));
 const SYMBOL = withSkippers(BARE_SYMBOL);
@@ -67,11 +67,29 @@ const symbol = mapData(
 	}),
 );
 
+const constant = mapData(
+	BARE_CONSTANT,
+	data => (ctx) => ctx.constants[data],
+);
+
+const constant_call = mapData(
+	join(constant, opt_multi(atom)),
+	data => (ctx) => {
+		let result = data[0](ctx);
+
+		for (let i = 0; i < data[1].length; i++) {
+			result = result(data[1][i](ctx));
+		}
+
+		return result;
+	},
+);
+
 atom.define(or(
-	mapData(join(NOT, atom), data => () => !data[1]()),
+	mapData(join(NOT, atom), data => (ctx) => !data[1](ctx)),
 	mapData(FLOAT, data => () => data),
 	mapData(INT, data => () => data),
-	mapData(CONSTANT, data => (ctx) => ctx.constants[data]),
+	constant_call,
 	symbol,
 	mapData(TRUE, () => () => true),
 	mapData(FALSE, () => () => false),
@@ -243,7 +261,7 @@ crystal.define(or(
 ));
 
 expression.define(
-	crystal,
+	withSkippers(crystal),
 );
 
 const run_expr = (input, constants) => {
@@ -305,7 +323,7 @@ export const expr = (arg, ...expressions) => {
 			input += segment;
 
 			if (i < expressions.length) {
-				input += `:!CONSTANT\$${i}`;
+				input += `:!CONSTANT\$${i}!`;
 			}
 		}
 
