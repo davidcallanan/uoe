@@ -1,5 +1,7 @@
 import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 
+import { tup } from "../tup.js";
+
 // TOKENS
 
 const SPACE = /^\s+/;
@@ -32,7 +34,26 @@ const LPAREN = withSkippers("(");
 const RPAREN = withSkippers(")");
 const TRUE = withSkippers("true");
 const FALSE = withSkippers("false");
+const COMMA = withSkippers(",");
+const SEMI = withSkippers(";");
+const RARR = withSkippers("->");
 // Use JavaScript when other operations are needed.
+
+const extract_alt = (item) => {
+	if (typeof item === "object") {
+		return item.alt_value;
+	}
+
+	return item;
+};
+
+const extract_final = (item) => {
+	if (typeof item === "object") {
+		return item.map_value;
+	}
+
+	return item;
+};
 
 // RULES
 
@@ -85,6 +106,63 @@ const constant_call = mapData(
 	},
 );
 
+const tuple_entry = or(
+	mapData(
+		join(SYMBOL, RARR, expression),
+		data => ({
+			type: "mapping_entry",
+			symbol: data[0],
+			expression: data[2],
+		}),
+	),
+	mapData(
+		expression,
+		data => ({
+			type: "positional_entry",
+			expression: data,
+		}),
+	),
+);
+
+const tuple = mapData(
+	or(
+		mapData(
+			join(LPAREN, opt_multi(join(tuple_entry, SEMI)), RPAREN),
+			data => ({
+				entries: data[1].map(entry => entry[0]),
+			}),
+		),
+		mapData(
+			join(LPAREN, opt_multi(tuple_entry, COMMA), RPAREN),
+			data => ({
+				entries: data[1],
+			}),
+		),
+	),
+	data => (ctx) => {
+		let positional_entries = [];
+		let named_entries = {};
+
+		// TODO: nested syntactic sugar.
+
+		let i = 0;
+
+		for (let entry of data.entries) {
+			if (entry.type == "positional_entry") {
+				positional_entries.push(entry.expression(ctx));
+			} else if (entry.type == "mapping_entry") {
+				named_entries[entry.symbol] = entry.expression(ctx);
+			}
+		}
+
+		return {
+			type: "map",
+			map_value: tup(...positional_entries)(named_entries),
+			alt_value: positional_entries[0],
+		};
+	},
+);
+
 atom.define(or(
 	mapData(join(NOT, atom), data => (ctx) => !data[1](ctx)),
 	mapData(FLOAT, data => () => data),
@@ -93,16 +171,17 @@ atom.define(or(
 	symbol,
 	mapData(TRUE, () => () => true),
 	mapData(FALSE, () => () => false),
-	mapData(join(LPAREN, expression, RPAREN), data => (ctx) => data[1](ctx)),
+	tuple,
+	// mapData(join(LPAREN, expression, RPAREN), data => (ctx) => data[1](ctx)),
 ));
 
 pistol.define(or(
 	mapData(join(atom, multi(join(or(PLUS, MINUS), atom))), data => (ctx) => {
-		let result = data[0](ctx);
+		let result = extract_alt(data[0](ctx));
 
 		for (let i = 0; i < data[1].length; i++) {
 			const op = data[1][i][0];
-			const value = data[1][i][1](ctx);
+			const value = extract_alt(data[1][i][1](ctx));
 
 			if (op == "+") {
 				result += value;
@@ -114,11 +193,11 @@ pistol.define(or(
 		return result;
 	}),
 	mapData(join(atom, multi(join(or(MULT, DIV), atom))), data => (ctx) => {
-		let result = data[0](ctx);
+		let result = extract_alt(data[0](ctx));
 
 		for (let i = 0; i < data[1].length; i++) {
 			const op = data[1][i][0];
-			const value = data[1][i][1](ctx);
+			const value = extract_alt(data[1][i][1](ctx));
 
 			if (op == "*") {
 				result *= value;
@@ -130,29 +209,29 @@ pistol.define(or(
 		return result;
 	}),
 	mapData(join(atom, multi(join(AND, atom))), data => (ctx) => {
-		let result = data[0](ctx);
+		let result = extract_alt(data[0](ctx));
 
 		for (let i = 0; i < data[1].length; i++) {
-			result = result && data[1][i][1](ctx);
+			result = result && extract_alt(data[1][i][1](ctx));
 		}
 
 		return result;
 	}),
 	mapData(join(atom, multi(join(OR, atom))), data => (ctx) => {
-		let result = data[0](ctx);
+		let result = extract_alt(data[0](ctx));
 
 		for (let i = 0; i < data[1].length; i++) {
-			result = result || data[1][i][1](ctx);
+			result = result || extract_alt(data[1][i][1](ctx));
 		}
 
 		return result;
 	}),
 	mapData(join(atom, multi(join(or(EQ, NEQ, GTE, LTE, GT, LT), atom))), data => (ctx) => {
-		let prev_value = data[0](ctx);
+		let prev_value = extract_alt(data[0](ctx));
 
 		for (let i = 0; i < data[1].length; i++) {
 			const op = data[1][i][0];
-			const value = data[1][i][1](ctx);
+			const value = extract_alt(data[1][i][1](ctx));
 
 			if (op == "==") {
 				if (!(prev_value === value)) {
@@ -194,7 +273,7 @@ crystal.define(or(
 		
 		for (let i = 0; i < data.length; i++) {
 			const op = data[i][0];
-			const value = data[i][1](ctx);
+			const value = extract_alt(data[i][1](ctx));
 
 			if (i == 0) {
 				if (typeof value === "number") {
@@ -218,7 +297,7 @@ crystal.define(or(
 		
 		for (let i = 0; i < data.length; i++) {
 			const op = data[i][0];
-			const value = data[i][1](ctx);
+			const value = extract_alt(data[i][1](ctx));
 
 			if (i == 0) {
 				if (typeof value === "number") {
@@ -229,6 +308,7 @@ crystal.define(or(
 			}
 			
 			if (op === "*") {
+				console.log(value);
 				result *= value;
 			} else if (op === "/") {
 				result /= value;
@@ -241,7 +321,7 @@ crystal.define(or(
 		let result = true;
 		
 		for (let i = 0; i < data.length; i++) {
-			const value = data[i][1](ctx);
+			const value = extract_alt(data[i][1](ctx));
 			result &&= value;
 		}
 
@@ -251,7 +331,7 @@ crystal.define(or(
 		let result = false;
 		
 		for (let i = 0; i < data.length; i++) {
-			const value = data[i][1](ctx);
+			const value = extract_alt(data[i][1](ctx));
 			result ||= value;
 		}
 
@@ -285,7 +365,7 @@ const run_expr = (input, constants) => {
 
 	cache.set(input, result);
 	
-	return result.data(ctx);
+	return extract_final(result.data(ctx));
 };
 
 /**
