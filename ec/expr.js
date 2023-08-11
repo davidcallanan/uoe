@@ -13,6 +13,7 @@ const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]
 
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
 const FLOAT = withSkippers(mapData(/^\d+\.\d+/, data => parseFloat(data.groups.all)));
+const STRING = withSkippers(mapData(/^\"(.*?)\"/, data => data.groups[0]));
 const BARE_CONSTANT = mapData(/^\:\!CONSTANT\$[0-9]\!+/, data => data.groups.all.split("$")[1].split("!")[0]);
 const CONSTANT = withSkippers(BARE_CONSTANT);
 const BARE_SYMBOL = mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1));
@@ -167,6 +168,7 @@ atom.define(or(
 	mapData(join(NOT, atom), data => (ctx) => !data[1](ctx)),
 	mapData(FLOAT, data => () => data),
 	mapData(INT, data => () => data),
+	mapData(STRING, data => () => data),
 	constant_call,
 	symbol,
 	mapData(TRUE, () => () => true),
