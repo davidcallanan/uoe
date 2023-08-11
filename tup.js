@@ -1,17 +1,11 @@
 import { map } from "./map.js";
 import { is_enm } from "./is_enm.js";
+import { enm } from "./enm.js";
 
 const create_tup = (positional_fields, named_fields) => {
 	const m = map((input) => {
 		if (input === undefined) {
-			return undefined; // TODO: do we want to return the first element?
-		}
-
-		if (typeof input === "object") {
-			return create_tup(positional_fields, {
-				...named_fields,
-				...input,
-			});
+			input = enm[0];
 		}
 
 		if (is_enm(input)) {
@@ -19,9 +13,16 @@ const create_tup = (positional_fields, named_fields) => {
 
 			if (isNaN(pos)) {
 				return named_fields[input.sym];
-			} else {
-				return positional_fields[pos];
 			}
+
+			return positional_fields[pos];
+		}
+
+		if (typeof input === "object") {
+			return create_tup(positional_fields, {
+				...named_fields,
+				...input,
+			});
 		}
 	});
 
