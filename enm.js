@@ -1,5 +1,9 @@
 const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 	get: (target, prop) => {
+		if (typeof prop === "symbol") {
+			return target[prop];
+		}
+
 		if (["sym", "data"].includes(prop)) {
 			return target[prop];
 		}
