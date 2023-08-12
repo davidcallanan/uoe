@@ -67,7 +67,7 @@ const expression = declare();
 symbol_extension.define(
 	or(
 		mapData(
-			join(BARE_SYMBOL, opt(symbol_extension)),
+			join(SYMBOL, opt(symbol_extension)),
 			data => (ctx) => ({
 				sym: data[0],
 				...data[1] && {
@@ -75,7 +75,7 @@ symbol_extension.define(
 				},
 			}),
 		),
-		mapData(BARE_CONSTANT, data => (ctx) => ctx.constants[data]),
+		mapData(atom, data => (ctx) => extract_final(data(ctx))),
 	),
 );
 
@@ -174,7 +174,6 @@ atom.define(or(
 	mapData(TRUE, () => () => true),
 	mapData(FALSE, () => () => false),
 	tuple,
-	// mapData(join(LPAREN, expression, RPAREN), data => (ctx) => data[1](ctx)),
 ));
 
 pistol.define(or(
