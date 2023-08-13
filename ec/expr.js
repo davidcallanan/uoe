@@ -49,7 +49,8 @@ const extract_alt = (item) => {
 };
 
 const extract_final = (item) => {
-	if (typeof item === "object") {
+	if (typeof item === "object" && item.map_value) {
+		// TODO: Make every value like this to avoid hacky test.
 		return item.map_value;
 	}
 
