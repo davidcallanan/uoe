@@ -1,10 +1,11 @@
 import { enm } from "./enm.js";
 import { is_enm } from "./is_enm.js";
 import { named_function } from "./named_function.js";
+import { unsuspended_api } from "./unsuspended_api.js";
 
 const symbol_is_map = Symbol("is_map");
 
-const is_map = (obj) => typeof obj === "function" && obj[symbol_is_map];
+export const is_map = (obj) => typeof obj === "function" && obj[symbol_is_map];
 
 const nil = Symbol("nil");
 
@@ -23,7 +24,7 @@ const cached = (func) => {
 export const map = (get) => {
 	let final_map;
 
-	let get_leaf = cached(() => Promise.resolve(get(undefined)));
+	let get_leaf = /*cached(*/() => unsuspended_api(Promise.resolve(get(undefined)))/*)*/;
 
 	const raw_map = named_function(get.name, (input) => {
 		if (input === undefined) {
@@ -34,24 +35,30 @@ export const map = (get) => {
 			return raw_map(enm[input.sym])(input.data);
 		}
 
-		const get_output = cached(() => Promise.resolve(get(input)));
+		const get_output = /*cached(*/() => Promise.resolve(get(input))/*)*/;
 
-		return map(async (input) => {
-			const output = await get_output();
-
+		return map((input) => {
 			if (input === undefined) {
+				return unsuspended_api((async () => {
+					const output = await get_output();
+
+					if (is_map(output)) {
+						return undefined;
+					}
+
+					return output;
+				})());
+			}
+
+			return (async () => {
+				const output = await get_output();
+
 				if (is_map(output)) {
-					return undefined;
+					return await output(input)();
 				}
 
-				return output;
-			}
-
-			if (is_map(output)) {
-				return await output(input)();
-			}
-
-			return undefined;
+				return undefined;
+			})();
 		});
 	});
 

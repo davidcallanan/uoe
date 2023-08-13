@@ -1,3 +1,8 @@
+// Bug: The following does not work correctly.
+// const x = expr`(:foo -> :bar("hello"))`;
+// console.log("j", await (await x.foo()).data[0]());
+// console.log("w", await (await x.foo().data)[0]());
+
 import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 
 import { tup } from "../tup.js";
@@ -91,7 +96,7 @@ const symbol = mapData(
 );
 
 const constant = mapData(
-	BARE_CONSTANT,
+	CONSTANT,
 	data => (ctx) => ctx.constants[data],
 );
 
