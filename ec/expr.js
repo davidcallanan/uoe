@@ -360,7 +360,7 @@ const run_expr = (input, constants) => {
 
 	if (cache.has(input)) {
 		const result = cache.get(input);
-		return result.data(ctx);
+		return extract_final(result.data(ctx));
 	}
 		
 	const result = expression(input);
