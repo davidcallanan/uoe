@@ -84,9 +84,11 @@ export const unsuspended_api = (api_promise_like, ctx) => {
 			return unsuspended_api((async () => {
 				const api = await api_promise;
 
-				if (typeof api[prop] === "function") {
-					return api[prop].bind(api);
-				}
+				// TODO: This hack appears to cause more problems than it solves.
+				// Should we instead put the onus on the API to make sure everything is bound correctly?
+				// if (typeof api[prop] === "function") {
+				// 	return api[prop].bind(api);
+				// }
 
 				return api[prop];
 			})(), {
