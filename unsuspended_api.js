@@ -1,4 +1,4 @@
-import { user_error, internal_error } from "./error.js";
+import { bind_callable } from "./bind_callable.js";
 
 /**
  * Wraps an api or promise to an api such that the api is immediately available. Properties and methods, including sub-properties of the api and sub-properties of the return-values of methods, are proxied to be immediately accessible before the api has neccesserily been resolved, and before parent properties and return-values of parent methods have been resolved. However, this means that the properties and methods are forced to be async.
@@ -66,15 +66,17 @@ export const unsuspended_api = (api_promise_like, ctx) => {
 			const api = await api_promise;
 
 			if (typeof api !== "function") {
-				if (ctx?.$$$_READING_PROP) {
-					throw new TypeError(`${api} is not a function (reading property ${ctx.$$$_READING_PROP})`);
+				if (ctx?.$$$_READING) {
+					throw new TypeError(`${api} is not a function (reading '${ctx.$$$_READING}')`);
 				}
 				
 				throw new TypeError(`${api} is not a function`);
 			}
 
 			return await Reflect.apply(api, api, args);
-		})());
+		})(), {
+			$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}()` : "()",
+		});
 	}, {
 		get: (_target, prop) => {
 			if (["then", "catch", "finally"].includes(prop)) {
@@ -84,15 +86,21 @@ export const unsuspended_api = (api_promise_like, ctx) => {
 			return unsuspended_api((async () => {
 				const api = await api_promise;
 
-				// TODO: This hack appears to cause more problems than it solves.
-				// Should we instead put the onus on the API to make sure everything is bound correctly?
-				// if (typeof api[prop] === "function") {
-				// 	return api[prop].bind(api);
-				// }
+				if (typeof api !== "object" || api === null) {
+					if (ctx?.$$$_READING) {
+						throw new TypeError(`Cannot read properties of ${api} (reading '${ctx.$$$_READING}.${prop}')`);
+					}
+
+					throw new TypeError(`Cannot read properties of ${api} (reading '${prop}')`);
+				}
+
+				if (typeof api[prop] === "function") {
+					return bind_callable(api[prop], api);
+				}
 
 				return api[prop];
 			})(), {
-				$$$_READING_PROP: prop,
+				$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}.${prop}` : prop,
 			});
 		},
 	});
