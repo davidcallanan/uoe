@@ -1,3 +1,7 @@
+/**
+ * @deprecated
+ */
+
 // In my opinion there are only three fundamental categories of errors.
 // Different categories of errors can be reported depending on the interface contract's policies.
 // I'm sure this system is not yet perfect but I'm getting there.

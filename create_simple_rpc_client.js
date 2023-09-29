@@ -1,6 +1,9 @@
 import { deferred_api } from "./deferred_api.js";
 import { user_error, internal_error } from "./error.js";
 
+/**
+ * @todo
+ */
 export const create_simple_rpc_client = (fetch, url) => {
 	// TODO: api no longer needs to be deferred.
 	return deferred_api(async () => {

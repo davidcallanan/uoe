@@ -11,6 +11,8 @@ const syntactic_sugar = (uly_map) => {
 };
 
 /**
+ * @deprecated
+ * 
  * `m` is for dependency on another map
  * `s` is for dependency on services (essentially everything else for the time being)
  * `l` is for local dependency on the map itself, for recursion or private methods

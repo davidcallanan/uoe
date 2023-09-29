@@ -2,6 +2,12 @@ import { create_promise } from "./create_promise.ts";
 import { build_obj } from "./build_obj.js";
 
 /**
+ * Creates a simple lock object with two methods, `acquire` and `acquire_immediately`.
+ * 
+ * The `acquire` method takes a callback and returns the callback's return value.
+ * 
+ * The `acquire_immediately` method will try to acquire the lock immediately and will invoke the callback with a boolean indicating whether the lock was succesful.
+ * 
  * This implementation is prone to circular deadlocks.
  */
 export const create_lock = () => {

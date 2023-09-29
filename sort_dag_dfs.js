@@ -1,5 +1,5 @@
 /**
- * This function sorts a directed acyclic graph (DAG) using depth-first search (DFS).
+ * Sorts a directed acyclic graph (DAG) using depth-first search (DFS).
  * 
  * @example
  * 

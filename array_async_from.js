@@ -1,4 +1,7 @@
-export const array_async_from = async (iterable) => {
+/**
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fromAsync
+ */
+export const array_from_async = async (iterable) => {
 	const result = [];
 
 	for await (const item of iterable) {
@@ -8,4 +11,4 @@ export const array_async_from = async (iterable) => {
 	return result;
 };
 
-export const arrayAsyncFrom = array_async_from;
+export const arrayFromAsync = array_from_async;

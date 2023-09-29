@@ -1,6 +1,8 @@
 import { create_promise } from "./create_promise.ts";
 
 /**
+ * @deprecated
+ * 
  * Similar to `Promise.resolve` but does not flatten nested layers of promise-like objects.
  * 
  * NEVERMIND: This does not work. It's seems to be impossible!

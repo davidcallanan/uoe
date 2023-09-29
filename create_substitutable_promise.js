@@ -42,5 +42,14 @@ class SubstitutablePromise {
 	}
 }
 
+/**
+ * Creates a special promise that can be substituted with another promise.
+ * 
+ * The `exposed` method returns a promise that resolves to the currently substituted promise.
+ * 
+ * The `substitute` method takes in a new promise which is used for resolution, provided the `exposed` promise has not already resolved.
+ * 
+ * The `is_settled` method indicates whether the promise has been settled.
+ */
 export const create_substitutable_promise = (initial_promise) => new SubstitutablePromise(initial_promise);
 export const createSubstitutablePromise = create_substitutable_promise;

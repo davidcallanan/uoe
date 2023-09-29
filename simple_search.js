@@ -7,6 +7,8 @@ const count_once = (string, substring) => {
 };
 
 /**
+ * @todo make a better version of this.
+ * 
  * Warning: The past-in objects are mutated, please pass in a copy if necessary.
  */
 export const simple_search = (array, query, options) => {

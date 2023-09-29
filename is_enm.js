@@ -1,5 +1,7 @@
 /**
- * Checks if an object is a uoe-enum.
+ * Checks if an object is a uoe-enum instance.
+ * 
+ * See `enm`.
  */
 export const is_enm = (obj) => typeof obj?.sym === "string";
 

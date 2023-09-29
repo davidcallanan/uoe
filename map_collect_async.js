@@ -1,3 +1,6 @@
+/**
+ * @deprecated This should support async iterables too.
+ */
 export const map_collect_async = (iterable, mapper) => {
 	const promises = [];
 	let i = 0;

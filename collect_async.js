@@ -1,3 +1,6 @@
+/**
+ * Collects all items from an async iterable into an array.
+ */
 export const collect_async = async (async_iterable) => {
 	const result = [];
 

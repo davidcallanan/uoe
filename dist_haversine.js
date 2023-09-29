@@ -1,4 +1,8 @@
-// This function was adapted from https://stackoverflow.com/q/18883601/1541397
+/**
+ * Calculates the distance between two lat/long locations on a sphere as the crow flies.
+ * 
+ * This function was adapted from https://stackoverflow.com/q/18883601/1541397
+ */
 
 export const dist_haversine = (location_a, location_b, sphere_radius = 1) => {
 	const degrees_to_radians = Math.PI / 180;

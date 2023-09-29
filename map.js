@@ -21,6 +21,13 @@ const cached = (func) => {
 	};
 };
 
+/**
+ * A map is the uoe standard for a determinstic function.
+ * 
+ * A map has only one input argument, so you may like to pass in a tuple or other data type if you need more complex input.
+ * 
+ * Some changes are shortly being considered and as such I won't finish documenting for now.
+ */
 export const map = (get) => {
 	let final_map;
 

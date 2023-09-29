@@ -1,4 +1,8 @@
-export const iter_arr_reverse = (arr) => {
+/**
+ * Iterates an array in reverse.
+*/
+
+export const iter_array_reverse = (arr) => {
 	return {
 		[Symbol.iterator]: () => {
 			let idx = arr.length;
@@ -17,4 +21,4 @@ export const iter_arr_reverse = (arr) => {
 	};
 };
 
-export const iterArrReverse = iter_arr_reverse;
+export const iterArrayReverse = iter_array_reverse;

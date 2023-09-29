@@ -31,5 +31,16 @@ class PromiseQueue {
     }
 }
 
+/**
+ * Allows you to await a bunch of promises while adding additional promises to the queue which are subsequently awaited too.
+ * 
+ * The `add` method takes in a promise and adds this promise to the queue.
+ * 
+ * The `all` method returns a promise that resolves when all promises in the queue have resolved.
+ * 
+ * At the time `all` is first called, all `all` calls will resolve at any point that all promises in the queue are in the resolved state.
+ * 
+ * Adding promises to the queue after resolution is equivalent to starting fresh with a new promise queue, the existing promises are swept from the queue after resolution.
+ */
 export const create_promise_queue = () => new PromiseQueue();
 export const createPromiseQueue = create_promise_queue;

@@ -1,6 +1,7 @@
 import { create_async_factory } from "./create_async_factory.js";
 import { unsuspended_factory } from "./unsuspended_factory.js";
 
+// @deprecated
 export const create_service_factory = (cls) => {
 	return unsuspended_factory(async (...args) => {
 		const obj = new cls(...args);

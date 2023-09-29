@@ -4,6 +4,8 @@ import { callable } from "./callable.js";
 import { named_function } from "./named_function.js";
 
 /**
+ * Creates an async factory for a class such that its `_init` method is called and awaited before the instantiated object is returned.
+ * 
  * @example
  * 
  * class Api {

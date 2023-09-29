@@ -1,7 +1,7 @@
 /**
  * @deprecated
  * 
- * Constructs a tuple object.
+ * Constructs a LEGACY tuple object.
  * 
  * @example
  * 

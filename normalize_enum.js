@@ -1,7 +1,7 @@
 import { enm } from "./enm.js";
 
 /**
- * Normalizes an enum such that a bare string is encoded as a verbose enum value.
+ * Normalizes an enum such that a bare string is converted to an enum using that string as the symbol.
  * 
  * @example
  * 

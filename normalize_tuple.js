@@ -1,6 +1,8 @@
 import { iter_zip } from "./iter_zip.js";
 
 /**
+ * @deprecated as this uses the legacy tuple format.
+ * 
  * Normalizes a tuple such that unnamed fields match the values of named fields.
  * 
  * @example
