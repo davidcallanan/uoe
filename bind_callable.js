@@ -1,6 +1,8 @@
 /**
  * This function will bind the `this` value of a callable during invocation, but will still let through access to properties of the original callable.
  * 
+ * Motivation: Normal binding of a function will prevent access to custom properties defined on the function. Binding a function this way will allow continued access to properties defined on your function.
+ * 
  * @example
  * 
  * const person = () => console.log("Hello");
