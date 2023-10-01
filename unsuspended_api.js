@@ -7,6 +7,8 @@ import { bind_callable } from "./bind_callable.js";
  * 
  * If errors are reported by the passed-in promise, these errors will instead be delivered as internal errors inside any promises obtained from the wrapped api.
  * 
+ * An almost drop-in replacement for a promise.
+ * 
  * Warning: The `then`, `catch` and `finally` properties must not be defined on the underlying api as this makes the underlying api promise-like, while also conflicting with our implementation of the promise interface at every level.
  * Doing this will cause bizarre behaviour which may be difficult to track down.
  * 
