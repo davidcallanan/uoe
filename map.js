@@ -1,7 +1,7 @@
 import { enm } from "./enm.js";
 import { is_enm } from "./is_enm.js";
 import { named_function } from "./named_function.js";
-import { unsuspended_api } from "./unsuspended_api.js";
+import { unsuspended_promise } from "./unsuspended_promise.js";
 
 const symbol_is_map = Symbol("is_map");
 
@@ -31,7 +31,7 @@ const cached = (func) => {
 export const map = (get) => {
 	let final_map;
 
-	let get_leaf = /*cached(*/() => unsuspended_api(Promise.resolve(get(undefined)))/*)*/;
+	let get_leaf = () => unsuspended_promise(get(undefined));
 
 	const raw_map = named_function(get.name, (input) => {
 		if (input === undefined) {
@@ -42,18 +42,12 @@ export const map = (get) => {
 			return raw_map(enm[input.sym])(input.data);
 		}
 
-		const get_output = /*cached(*/() => Promise.resolve(get(input))/*)*/;
+		const get_output = () => Promise.resolve(get(input));
 
 		return map((input) => {
 			if (input === undefined) {
-				return unsuspended_api((async () => {
-					const output = await get_output();
-
-					if (is_map(output)) {
-						return undefined;
-					}
-
-					return output;
+				return unsuspended_promise((async () => {
+					return await get_output();
 				})());
 			}
 
