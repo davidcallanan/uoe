@@ -9,16 +9,30 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 		}
 
 		if (prop === "then") {
+			// Due to nested promise flattening, we cannot allow a map to be promise-like.
+			// We must forcefully undefine the `then` property, as otherwise it would be classified as a "thenable".
+			// If access to `:then` is needed, you must use the property [":then"] instead.
+
 			return undefined;
 		}
 
-		if (prop === "$then") {
-			prop = "then";
+		if (prop.startsWith(":")) {
+			if (prop === ":then") {
+				prop = "then";
+			} else if (prop === ":sym") {
+				prop = "sym";
+			} else if (prop === ":data") {
+				prop = "data";
+			}
 		}
 
 		if (prop.includes(".")) {
 			const [first, ...rest] = prop.split(".");
-			return target[first][rest];
+			return target[first][rest.join(".")];
+		}
+
+		if (prop.match(/[^a-zA-Z0-9_]/)) {
+			throw new Error(`Illegal symbol: ${prop}`);
 		}
 
 		if (overall === undefined) {

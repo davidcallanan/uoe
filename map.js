@@ -1,5 +1,6 @@
 import { enm } from "./enm.js";
 import { is_enm } from "./is_enm.js";
+import { is_api } from "./is_api.js";
 import { named_function } from "./named_function.js";
 import { unsuspended_promise } from "./unsuspended_promise.js";
 
@@ -26,12 +27,28 @@ const cached = (func) => {
  * 
  * A map has only one input argument, so you may like to pass in a tuple or other data type if you need more complex input.
  * 
- * Some changes are shortly being considered and as such I won't finish documenting for now.
+ * A map must obey the following rule:
+ * 
+ *  - Calling a map with an enum containing data is equivalent to first calling the map with just the symbol of the enum, and subsequently calling the result with just the data of the enum. In other words `map(:foo(data))` must be equivalent to `map(:foo)(data)`.
+ * 
+ * Accessing a property on a map (`map.foo`) is syntactic sugar for calling the map with the respective symbol (`map(enm.foo)`).
+ * 
+ * When calling a map, another map is returned. The only exception is when a map is called with `undefined`, this is the only way a final non-map result can be obtained, this is referred to as a "leaf" value.
+ * 
+ * If the leaf value is an api, it is implicitely executed and the result is returned instead.
  */
 export const map = (get) => {
 	let final_map;
 
-	let get_leaf = () => unsuspended_promise(get(undefined));
+	let get_leaf = () => unsuspended_promise(async () => {
+		const result = await get(undefined);
+
+		if (is_api(result)) {
+			return await result();
+		}
+
+		return result;
+	});
 
 	const raw_map = named_function(get.name, (input) => {
 		if (input === undefined) {
@@ -71,8 +88,9 @@ export const map = (get) => {
 
 			if (prop === "then") {
 				// Due to nested promise flattening, we cannot allow a map to be promise-like.
-				// We must forcefully undefine the `then` property, as otherwise it would return another map which would classify it as a "thenable".
-				// If access to the `then` enum is needed, you must explicitly call the map with this enum instead (`enm.$then`).
+				// We must forcefully undefine the `then` property, as otherwise it would be classified as a "thenable".
+				// If access to `:then` is needed, you must use the property [":then"] or call the map with `enm[":then"]`.
+
 				return undefined;
 			}
 
