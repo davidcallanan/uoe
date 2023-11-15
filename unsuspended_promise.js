@@ -1,5 +1,53 @@
 import { bind_callable } from "./bind_callable.js";
 
+const unsuspended_promise_ = (promise_like, ctx) => {
+	const promise = Promise.resolve(promise_like);
+
+	return new Proxy((...args) => {
+		return unsuspended_promise_((async () => {
+			const api = await promise;
+
+			if (typeof api !== "function") {
+				if (ctx?.$$$_READING) {
+					throw new TypeError(`${api} is not a function (reading '${ctx.$$$_READING}')`);
+				}
+				
+				throw new TypeError(`${api} is not a function`);
+			}
+
+			return await Reflect.apply(api, api, args);
+		})(), {
+			$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}()` : "()",
+		});
+	}, {
+		get: (_target, prop) => {
+			if (["then", "catch", "finally"].includes(prop)) {
+				return promise[prop].bind(promise);
+			}
+
+			return unsuspended_promise_((async () => {
+				const api = await promise;
+
+				if (typeof api !== "object" || api === null) {
+					if (ctx?.$$$_READING) {
+						throw new TypeError(`Cannot read properties of ${api} (reading '${ctx.$$$_READING}.${prop}')`);
+					}
+
+					throw new TypeError(`Cannot read properties of ${api} (reading '${prop}')`);
+				}
+
+				if (typeof api[prop] === "function") {
+					return bind_callable(api[prop], api);
+				}
+
+				return api[prop];
+			})(), {
+				$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}.${prop}` : prop,
+			});
+		},
+	});
+};
+
 /**
  * An almost drop-in replacement for promises. Takes in a promise-like or non-promise value and returns a glorified promise. Analogous to `Promise.resolve`. 
  * 
@@ -61,55 +109,6 @@ import { bind_callable } from "./bind_callable.js";
  * await opengl_api.draw_triangle();
  * console.log("triangle drawn");
  */
-
-const unsuspended_promise_ = (promise_like, ctx) => {
-	const promise = Promise.resolve(promise_like);
-
-	return new Proxy((...args) => {
-		return unsuspended_promise_((async () => {
-			const api = await promise;
-
-			if (typeof api !== "function") {
-				if (ctx?.$$$_READING) {
-					throw new TypeError(`${api} is not a function (reading '${ctx.$$$_READING}')`);
-				}
-				
-				throw new TypeError(`${api} is not a function`);
-			}
-
-			return await Reflect.apply(api, api, args);
-		})(), {
-			$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}()` : "()",
-		});
-	}, {
-		get: (_target, prop) => {
-			if (["then", "catch", "finally"].includes(prop)) {
-				return promise[prop].bind(promise);
-			}
-
-			return unsuspended_promise_((async () => {
-				const api = await promise;
-
-				if (typeof api !== "object" || api === null) {
-					if (ctx?.$$$_READING) {
-						throw new TypeError(`Cannot read properties of ${api} (reading '${ctx.$$$_READING}.${prop}')`);
-					}
-
-					throw new TypeError(`Cannot read properties of ${api} (reading '${prop}')`);
-				}
-
-				if (typeof api[prop] === "function") {
-					return bind_callable(api[prop], api);
-				}
-
-				return api[prop];
-			})(), {
-				$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}.${prop}` : prop,
-			});
-		},
-	});
-};
-
 export const unsuspended_promise = (api_promise_like) => {
 	return unsuspended_promise_(api_promise_like);
 };
