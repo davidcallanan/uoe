@@ -1,13 +1,15 @@
 import { bind_callable } from "./bind_callable.js";
 
 /**
+ * An almost drop-in replacement for promises. Takes in a promise-like or non-promise value and returns a glorified promise. Analogous to `Promise.resolve`. 
+ * 
+ * Unsuspended promises incorporate an unsuspension mechanism. 
+ * 
  * Wraps an api or promise to an api such that the api is immediately available. Properties and methods, including sub-properties of the api and sub-properties of the return-values of methods, are proxied to be immediately accessible before the api has neccesserily been resolved, and before parent properties and return-values of parent methods have been resolved. However, this means that the properties and methods are forced to be async.
  * 
  * Upon access of a property or invocation of the wrapped api, it will first wait for the underlying api to be resolved before proceeding.
  * 
  * If errors are reported by the passed-in promise, these errors will instead be delivered as internal errors inside any promises obtained from the wrapped api.
- * 
- * An almost drop-in replacement for a promise.
  * 
  * Warning: The `then`, `catch` and `finally` properties must not be defined on the underlying api as this makes the underlying api promise-like, while also conflicting with our implementation of the promise interface at every level.
  * Doing this will cause bizarre behaviour which may be difficult to track down.
@@ -60,12 +62,12 @@ import { bind_callable } from "./bind_callable.js";
  * console.log("triangle drawn");
  */
 
-export const unsuspended_promise = (api_promise_like, ctx) => {
-	const api_promise = Promise.resolve(api_promise_like);
+const unsuspended_promise_ = (promise_like, ctx) => {
+	const promise = Promise.resolve(promise_like);
 
 	return new Proxy((...args) => {
-		return unsuspended_promise((async () => {
-			const api = await api_promise;
+		return unsuspended_promise_((async () => {
+			const api = await promise;
 
 			if (typeof api !== "function") {
 				if (ctx?.$$$_READING) {
@@ -82,11 +84,11 @@ export const unsuspended_promise = (api_promise_like, ctx) => {
 	}, {
 		get: (_target, prop) => {
 			if (["then", "catch", "finally"].includes(prop)) {
-				return api_promise[prop].bind(api_promise);
+				return promise[prop].bind(promise);
 			}
 
-			return unsuspended_promise((async () => {
-				const api = await api_promise;
+			return unsuspended_promise_((async () => {
+				const api = await promise;
 
 				if (typeof api !== "object" || api === null) {
 					if (ctx?.$$$_READING) {
@@ -106,6 +108,10 @@ export const unsuspended_promise = (api_promise_like, ctx) => {
 			});
 		},
 	});
+};
+
+export const unsuspended_promise = (api_promise_like) => {
+	return unsuspended_promise_(api_promise_like);
 };
 
 export const unsuspendedPromise = unsuspended_promise;
