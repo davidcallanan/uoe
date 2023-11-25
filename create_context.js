@@ -9,7 +9,7 @@ let next_context_id = 0;
 
 /**
  * 
- * Requires V8. Credit to @WolverinDEV.
+ * Requires V8 and async stack traces feature. Credit to @WolverinDEV.
  * 
  * @see https://stackoverflow.com/a/75449704/1541397
  * 
@@ -46,7 +46,7 @@ export const create_context = () => {
 				continue;
 			}
 
-			return context_id;
+			return values.get(context_id);
 		}
 
 		return undefined;
@@ -54,7 +54,7 @@ export const create_context = () => {
 		with: (value, func) => {
 			const context_id = next_context_id++;
 			values.set(context_id, value);
-			const wrapper = named_function(`${func_name}${context_id_prefix}${context_id}${context_id_suffix}`, func);
+			const wrapper = named_function(`${func.name}${context_id_prefix}${context_id}${context_id_suffix}`, func);
 			const result = wrapper.call(this);
 			Promise.resolve(result).finally(() => values.delete(context_id));
 			return result;
