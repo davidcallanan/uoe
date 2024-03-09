@@ -27,11 +27,6 @@ await test("string", async () => {
 	return await e`"foo"`() === "foo";
 });
 
-await test("bare enum", async () => {
-	const foo = await e`:foo`();
-	return is_enm(foo) && foo.sym === "foo";
-});
-
 await test("addition", async () => {
 	return await e`1 + 2 - 4 + 8`() === 7n;
 });
@@ -100,4 +95,14 @@ await test("logical and 2", async () => {
 	  && true
 	  && true
 	`() === true;
+});
+
+await test("bare enum", async () => {
+	const foo = await e`:foo`();
+	return is_enm(foo) && foo.sym === "foo";
+});
+
+await test("nested bare enum", async () => {
+	const foo = await e`:foo:bar`();
+	return is_enm(foo) && foo.sym === "foo" && is_enm(foo.data) && foo.data.sym === "bar";
 });
