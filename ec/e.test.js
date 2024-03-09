@@ -1,9 +1,18 @@
 import { test } from "../test.js";
 import { e } from "./e.js";
+import { is_enm } from "../is_enm.js";
 
 await test("constant", async () => {
 	const number = 123n;
 	return await e`${number}`() === number;
+});
+
+await test("true", async () => {
+	return await e`true`() === true;
+});
+
+await test("false", async () => {
+	return await e`false`() === false;
 });
 
 await test("int", async () => {
@@ -16,6 +25,11 @@ await test("float", async () => {
 
 await test("string", async () => {
 	return await e`"foo"`() === "foo";
+});
+
+await test("bare enum", async () => {
+	const foo = await e`:foo`();
+	return is_enm(foo) && foo.sym === "foo";
 });
 
 await test("addition", async () => {

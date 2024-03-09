@@ -72,7 +72,7 @@ symbol_extension.define(
 
 const symbol = mapData(
 	join(BARE_SYMBOL, opt(symbol_extension)),
-	data => (ctx) => ({
+	data => (ctx) => leaf_map({
 		sym: data[0],
 		...data[1] && {
 			data: data[1](ctx),
