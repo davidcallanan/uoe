@@ -6,7 +6,7 @@ import { unsuspended_promise } from "./unsuspended_promise.js";
 
 const symbol_is_map = Symbol("is_map");
 
-export const is_map = (obj) => typeof obj === "function" && obj[symbol_is_map];
+export const _is_map = (obj) => typeof obj === "function" && obj[symbol_is_map];
 
 const nil = Symbol("nil");
 
@@ -40,7 +40,7 @@ const cached = (func) => {
 export const map = (get) => {
 	let final_map;
 
-	let get_leaf = () => unsuspended_promise(async () => {
+	let get_leaf = () => unsuspended_promise((async () => {
 		const result = await get(undefined);
 
 		if (is_api(result)) {
@@ -48,7 +48,7 @@ export const map = (get) => {
 		}
 
 		return result;
-	});
+	})());
 
 	const raw_map = named_function(get.name, (input) => {
 		if (input === undefined) {
@@ -71,7 +71,7 @@ export const map = (get) => {
 			return (async () => {
 				const output = await get_output();
 
-				if (is_map(output)) {
+				if (_is_map(output)) {
 					return await output(input)();
 				}
 
