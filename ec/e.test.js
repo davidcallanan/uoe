@@ -129,3 +129,14 @@ await test("empty block", async () => {
 	const foo = e`{}`;
 	return is_map(foo);
 });
+
+await test("enum with empty map", async () => {
+	e`:foo()`;
+	e`:bar{}`;
+	return true;
+});
+
+await test("populated positional tuple", async () => {
+	const foo = e`("foo", "bar")`;
+	return await foo[0]() === "foo" && await foo[1]() === "bar";
+});

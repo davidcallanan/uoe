@@ -9,13 +9,15 @@ import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 
 import { tup } from "../tup.js";
 import { map } from "../map.js";
+import { unsuspended_map } from "../unsuspended_map.js";
+import { is_enm } from "../is_enm.js";
 
 // TOKENS
 
-const SPACE = /^\s+/;
+const WHITESPACE = /^\s+/;
 const SINGLELINE_COMMENT  = mapData(/^\s*\/\/(.*?)\n/s,   data => data.groups[0]);
 const MULTILINE_COMMENT   = mapData(/^\s*\/\*(.*?)\*\//s, data => data.groups[0]);
-const SKIPPERS = opt(multi(or(SPACE, SINGLELINE_COMMENT, MULTILINE_COMMENT)));
+const SKIPPERS = opt(multi(or(WHITESPACE, SINGLELINE_COMMENT, MULTILINE_COMMENT)));
 
 const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]);
 
@@ -107,7 +109,7 @@ const constant_call = mapData(
 
 const tuple_entry = or(
 	mapData(
-		join(SYMBOL, expression),
+		join(BARE_SYMBOL, WHITESPACE, expression),
 		data => ({
 			type: "mapping_entry",
 			symbol: data[0],
@@ -140,20 +142,30 @@ tuple.define(mapData(
 		),
 	),
 	data => (ctx) => {
-		let positional_entries = [];
-		let named_entries = {};
+		let next_positional_idx = 0;
+		const entries = new Map();
 
 		// TODO: nested syntactic sugar.
 
 		for (let entry of data.entries) {
 			if (entry.type == "positional_entry") {
-				positional_entries.push(entry.expression(ctx));
+				entries.set(`${next_positional_idx++}`, entry.expression(ctx));
 			} else if (entry.type == "mapping_entry") {
-				named_entries[entry.symbol] = entry.expression(ctx);
+				entries.set(entry.symbol, entry.expression(ctx));
 			}
 		}
 
-		return tup(...positional_entries)(named_entries);
+		return map(async (input) => {
+			if (input === undefined) {
+				return undefined;
+			}
+
+			if (is_enm(input)) {
+				return await entries.get(input.sym)();
+			} else {
+				throw new Error("Expected enum. Todo: check for leaf enum here?");
+			}
+		});
 	},
 ));
 
@@ -167,7 +179,7 @@ atom.define(or(
 		const value = await data[1](ctx)();
 
 		if (typeof value !== "boolean") {
-			throw `Expected boolean, got ${value}`;
+			throw new Error(`Expected boolean, got ${value}`);
 		}
 
 		return !await data[1](ctx)();
@@ -392,7 +404,7 @@ const run_expr = (input, constants) => {
 	
 	if (result.success === false || result.input !== "") {
 		console.error(result);
-		throw `Failed to parse`;
+		throw new Error(`Failed to parse`);
 	}
 
 	cache.set(input, result);
