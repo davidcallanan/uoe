@@ -97,6 +97,10 @@ await test("logical and 2", async () => {
 	`() === true;
 });
 
+await test("logical not", async () => {
+	return await e`!true`() === false && await e`!false`() === true;
+});
+
 await test("bare enum", async () => {
 	const foo = await e`:foo`();
 	return is_enm(foo) && foo.sym === "foo";

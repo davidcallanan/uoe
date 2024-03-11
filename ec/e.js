@@ -66,7 +66,7 @@ symbol_extension.define(
 				},
 			}),
 		),
-		mapData(atom, data => (ctx) => data(ctx)),
+		mapData(atom, data => (ctx) => data(ctx)), // TODO: must be symbol or tuple
 	),
 );
 
@@ -98,61 +98,67 @@ const constant_call = mapData(
 	},
 );
 
-const tuple_entry = or(
-	mapData(
-		join(SYMBOL, RARR, expression),
-		data => ({
-			type: "mapping_entry",
-			symbol: data[0],
-			expression: data[2],
-		}),
-	),
-	mapData(
-		expression,
-		data => ({
-			type: "positional_entry",
-			expression: data,
-		}),
-	),
-);
+// const tuple_entry = or(
+// 	mapData(
+// 		join(SYMBOL, RARR, expression),
+// 		data => ({
+// 			type: "mapping_entry",
+// 			symbol: data[0],
+// 			expression: data[2],
+// 		}),
+// 	),
+// 	mapData(
+// 		expression,
+// 		data => ({
+// 			type: "positional_entry",
+// 			expression: data,
+// 		}),
+// 	),
+// );
 
-const tuple = mapData(
-	or(
-		mapData(
-			join(LPAREN, opt_multi(join(tuple_entry, SEMI)), RPAREN),
-			data => ({
-				entries: data[1].map(entry => entry[0]),
-			}),
-		),
-		mapData(
-			join(LPAREN, opt_multi(tuple_entry, COMMA), RPAREN),
-			data => ({
-				entries: data[1],
-			}),
-		),
-	),
-	data => (ctx) => {
-		let positional_entries = [];
-		let named_entries = {};
+// const tuple = mapData(
+// 	or(
+// 		mapData(
+// 			join(LPAREN, opt_multi(join(tuple_entry, SEMI)), RPAREN),
+// 			data => ({
+// 				entries: data[1].map(entry => entry[0]),
+// 			}),
+// 		),
+// 		mapData(
+// 			join(LPAREN, opt_multi(tuple_entry, COMMA), RPAREN),
+// 			data => ({
+// 				entries: data[1],
+// 			}),
+// 		),
+// 	),
+// 	data => (ctx) => {
+// 		let positional_entries = [];
+// 		let named_entries = {};
 
-		// TODO: nested syntactic sugar.
+// 		// TODO: nested syntactic sugar.
 
-		let i = 0;
+// 		let i = 0;
 
-		for (let entry of data.entries) {
-			if (entry.type == "positional_entry") {
-				positional_entries.push(entry.expression(ctx));
-			} else if (entry.type == "mapping_entry") {
-				named_entries[entry.symbol] = entry.expression(ctx);
-			}
-		}
+// 		for (let entry of data.entries) {
+// 			if (entry.type == "positional_entry") {
+// 				positional_entries.push(entry.expression(ctx));
+// 			} else if (entry.type == "mapping_entry") {
+// 				named_entries[entry.symbol] = entry.expression(ctx);
+// 			}
+// 		}
 
-		return tup(...positional_entries)(named_entries);
-	},
-);
+// 		return tup(...positional_entries)(named_entries);
+// 	},
+// );
 
 atom.define(or(
 	mapData(join(NOT, atom), data => (ctx) => leaf_map((async () => {
+		const value = await data[1](ctx)();
+
+		if (typeof value !== "boolean") {
+			throw `Expected boolean, got ${value}`;
+		}
+
 		return !await data[1](ctx)();
 	})())),
 	mapData(FLOAT, data => () => leaf_map(data)),
@@ -162,7 +168,7 @@ atom.define(or(
 	symbol,
 	mapData(TRUE, () => () => leaf_map(true)),
 	mapData(FALSE, () => () => leaf_map(false)),
-	tuple,
+	// tuple,
 ));
 
 pistol.define(or(
