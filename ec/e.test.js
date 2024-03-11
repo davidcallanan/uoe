@@ -136,7 +136,16 @@ await test("enum with empty map", async () => {
 	return true;
 });
 
-await test("populated positional tuple", async () => {
+await test("comma positional tuple", async () => {
 	const foo = e`("foo", "bar")`;
+	return await foo[0]() === "foo" && await foo[1]() === "bar";
+});
+
+await test("semi positional tuple", async () => {
+	const foo = e`(
+		"foo";
+		"bar";
+	)`;
+	
 	return await foo[0]() === "foo" && await foo[1]() === "bar";
 });
