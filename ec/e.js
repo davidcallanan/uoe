@@ -109,11 +109,11 @@ const constant_call = mapData(
 
 const tuple_entry = or(
 	mapData(
-		join(BARE_SYMBOL, WHITESPACE, expression),
+		join(opt(WHITESPACE), BARE_SYMBOL, WHITESPACE, expression),
 		data => ({
 			type: "mapping_entry",
-			symbol: data[0],
-			expression: data[2],
+			symbol: data[1],
+			expression: data[3],
 		}),
 	),
 	mapData(

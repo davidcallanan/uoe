@@ -155,6 +155,15 @@ await test("comma named tuple", async () => {
 	return await foo.name() === "john doe" && await foo.age() === 27n;
 });
 
+await test("semi named tuple", async () => {
+	const foo = e`(
+		:name "john doe";
+		:age 27;
+	)`;
+
+	return await foo.name() === "john doe" && await foo.age() === 27n;
+});
+
 await test("tuple parenthesis", async () => {
 	const foo = e`(: 5)`;
 	return await foo() === 5n;
