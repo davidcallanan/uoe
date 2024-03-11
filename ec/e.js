@@ -26,7 +26,7 @@ const FLOAT = withSkippers(mapData(/^\d+\.\d+/, data => parseFloat(data.groups.a
 const STRING = withSkippers(mapData(/^\"(.*?)\"/, data => data.groups[0]));
 const BARE_CONSTANT = mapData(/^\:\!CONSTANT\$[0-9]\!+/, data => data.groups.all.split("$")[1].split("!")[0]);
 const CONSTANT = withSkippers(BARE_CONSTANT);
-const BARE_SYMBOL = mapData(/^\:[a-z_][a-z0-9_]*/, data => data.groups.all.substring(1));
+const BARE_SYMBOL = mapData(/^\:[a-z0-9_]*/, data => data.groups.all.substring(1));
 const SYMBOL = withSkippers(BARE_SYMBOL);
 const PLUS = withSkippers("+");
 const MINUS = withSkippers("-");
@@ -126,7 +126,6 @@ const tuple_entry = or(
 );
 
 tuple.define(mapData(
-	// TODO: fast return
 	or(
 		mapData(
 			join(BARE_LPAREN, opt_multi(join(tuple_entry, SEMI)), RPAREN),
@@ -151,6 +150,10 @@ tuple.define(mapData(
 			if (entry.type == "positional_entry") {
 				entries.set(`${next_positional_idx++}`, entry.expression(ctx));
 			} else if (entry.type == "mapping_entry") {
+				if (entry.symbol === "") {
+					return entry.expression(ctx);	
+				}
+
 				entries.set(entry.symbol, entry.expression(ctx));
 			}
 		}

@@ -146,6 +146,21 @@ await test("semi positional tuple", async () => {
 		"foo";
 		"bar";
 	)`;
-	
+
 	return await foo[0]() === "foo" && await foo[1]() === "bar";
+});
+
+await test("comma named tuple", async () => {
+	const foo = e`(:name "john doe", :age 27)`;
+	return await foo.name() === "john doe" && await foo.age() === 27n;
+});
+
+await test("tuple parenthesis", async () => {
+	const foo = e`(: 5)`;
+	return await foo() === 5n;
+});
+
+await test("block parenthesis", async () => {
+	const foo = e`{: 5}`;
+	return await foo() === 5n;
 });
