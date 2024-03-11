@@ -65,6 +65,14 @@ await test("long multiplication", async () => {
 	return (await force()).toFixed(5) === "0.00335";
 });
 
+await test("negative number", async () => {
+	return await e`-1`() === -1n;
+});
+
+await test("inverse number", async () => {
+	return await e`/4.0`() === 0.25;
+});
+
 await test("logical or 1", async () => {
 	return await e`
 	  || false
