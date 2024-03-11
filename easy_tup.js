@@ -1,7 +1,9 @@
 /**
  * @deprecated
  * 
- * Constructs a LEGACY tuple object.
+ * Constructs an object containing both positional and named fields.
+ * 
+ * Not to be confused with a uoe tuple.
  * 
  * @example
  * 
@@ -13,7 +15,7 @@
  *   age: 30,
  * });
  */
-export const tup = (...fields) => {
+export const easy_tup = (...fields) => {
 	return new Proxy(fields, {
 		apply: (_, __, [obj]) => {
 			let result = [...fields];

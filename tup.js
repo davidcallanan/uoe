@@ -4,7 +4,7 @@ import { enm } from "./enm.js";
 
 const create_tup = (positional_fields, named_fields) => {
 	const m = map((input) => {
-		if (input === undefined) {
+		if (input === undefined) { // TODO
 			input = enm[0];
 		}
 
@@ -30,7 +30,7 @@ const create_tup = (positional_fields, named_fields) => {
 };
 
 /**
- * Constructs a tuple object.
+ * Constructs a uoe tuple which is just a uoe map with both positional and named fields.
  * 
  * @example
  * 
