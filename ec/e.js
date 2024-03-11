@@ -8,6 +8,7 @@ import { leaf_map } from "../leaf_map.js";
 import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 
 import { tup } from "../tup.js";
+import { map } from "../map.js";
 
 // TOKENS
 
@@ -38,19 +39,24 @@ const GT = withSkippers(">");
 const LTE = withSkippers("<=");
 const GTE = withSkippers(">=");
 const NOT = withSkippers("!");
-const LPAREN = withSkippers("(");
+const BARE_LPAREN = "(";
+const LPAREN = withSkippers(BARE_LPAREN);
 const RPAREN = withSkippers(")");
+const BARE_LBRACE = "{";
+const LBRACE = withSkippers(BARE_LBRACE);
+const RBRACE = withSkippers("}");
 const TRUE = withSkippers("true");
 const FALSE = withSkippers("false");
 const COMMA = withSkippers(",");
 const SEMI = withSkippers(";");
-const RARR = withSkippers("->");
 // Use JavaScript when other operations are needed.
 
 // RULES
 
 const symbol_extension = declare();
 const atom = declare();
+const tuple = declare();
+const block = declare();
 const crystal = declare();
 const pistol = declare();
 const expression = declare();
@@ -66,7 +72,8 @@ symbol_extension.define(
 				},
 			}),
 		),
-		mapData(atom, data => (ctx) => data(ctx)), // TODO: must be symbol or tuple
+		tuple,
+		block,
 	),
 );
 
@@ -86,7 +93,7 @@ const constant = mapData(
 );
 
 const constant_call = mapData(
-	join(constant, opt_multi(atom)),
+	join(constant, opt_multi(symbol)),
 	data => (ctx) => {
 		let result = data[0](ctx);
 
@@ -98,58 +105,62 @@ const constant_call = mapData(
 	},
 );
 
-// const tuple_entry = or(
-// 	mapData(
-// 		join(SYMBOL, RARR, expression),
-// 		data => ({
-// 			type: "mapping_entry",
-// 			symbol: data[0],
-// 			expression: data[2],
-// 		}),
-// 	),
-// 	mapData(
-// 		expression,
-// 		data => ({
-// 			type: "positional_entry",
-// 			expression: data,
-// 		}),
-// 	),
-// );
+const tuple_entry = or(
+	mapData(
+		join(SYMBOL, expression),
+		data => ({
+			type: "mapping_entry",
+			symbol: data[0],
+			expression: data[2],
+		}),
+	),
+	mapData(
+		expression,
+		data => ({
+			type: "positional_entry",
+			expression: data,
+		}),
+	),
+);
 
-// const tuple = mapData(
-// 	or(
-// 		mapData(
-// 			join(LPAREN, opt_multi(join(tuple_entry, SEMI)), RPAREN),
-// 			data => ({
-// 				entries: data[1].map(entry => entry[0]),
-// 			}),
-// 		),
-// 		mapData(
-// 			join(LPAREN, opt_multi(tuple_entry, COMMA), RPAREN),
-// 			data => ({
-// 				entries: data[1],
-// 			}),
-// 		),
-// 	),
-// 	data => (ctx) => {
-// 		let positional_entries = [];
-// 		let named_entries = {};
+tuple.define(mapData(
+	// TODO: fast return
+	or(
+		mapData(
+			join(BARE_LPAREN, opt_multi(join(tuple_entry, SEMI)), RPAREN),
+			data => ({
+				entries: data[1].map(entry => entry[0]),
+			}),
+		),
+		mapData(
+			join(BARE_LPAREN, opt_multi(tuple_entry, COMMA), RPAREN),
+			data => ({
+				entries: data[1],
+			}),
+		),
+	),
+	data => (ctx) => {
+		let positional_entries = [];
+		let named_entries = {};
 
-// 		// TODO: nested syntactic sugar.
+		// TODO: nested syntactic sugar.
 
-// 		let i = 0;
+		for (let entry of data.entries) {
+			if (entry.type == "positional_entry") {
+				positional_entries.push(entry.expression(ctx));
+			} else if (entry.type == "mapping_entry") {
+				named_entries[entry.symbol] = entry.expression(ctx);
+			}
+		}
 
-// 		for (let entry of data.entries) {
-// 			if (entry.type == "positional_entry") {
-// 				positional_entries.push(entry.expression(ctx));
-// 			} else if (entry.type == "mapping_entry") {
-// 				named_entries[entry.symbol] = entry.expression(ctx);
-// 			}
-// 		}
+		return tup(...positional_entries)(named_entries);
+	},
+));
 
-// 		return tup(...positional_entries)(named_entries);
-// 	},
-// );
+block.define(mapData(
+	join(BARE_LBRACE, RBRACE),
+	data => () => map(),
+));
 
 atom.define(or(
 	mapData(join(NOT, atom), data => (ctx) => leaf_map((async () => {
@@ -168,7 +179,8 @@ atom.define(or(
 	symbol,
 	mapData(TRUE, () => () => leaf_map(true)),
 	mapData(FALSE, () => () => leaf_map(false)),
-	// tuple,
+	tuple,
+	block,
 ));
 
 pistol.define(or(

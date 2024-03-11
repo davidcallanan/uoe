@@ -38,6 +38,8 @@ const cached = (func) => {
  * If the leaf value is an api, it is implicitely executed and the result is returned instead.
  */
 export const map = (get) => {
+	get ??= () => {};
+
 	let final_map;
 
 	let get_leaf = () => unsuspended_promise((async () => {

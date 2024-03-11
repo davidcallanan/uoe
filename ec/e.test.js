@@ -1,6 +1,7 @@
 import { test } from "../test.js";
 import { e } from "./e.js";
 import { is_enm } from "../is_enm.js";
+import { is_map } from "../is_map.js";
 
 await test("constant", async () => {
 	const number = 123n;
@@ -117,4 +118,14 @@ await test("bare enum", async () => {
 await test("nested bare enum", async () => {
 	const foo = await e`:foo:bar`();
 	return is_enm(foo) && foo.sym === "foo" && is_enm(foo.data) && foo.data.sym === "bar";
+});
+
+await test("empty tuple", async () => {
+	const foo = e`()`;
+	return is_map(foo);
+});
+
+await test("empty block", async () => {
+	const foo = e`{}`;
+	return is_map(foo);
 });
