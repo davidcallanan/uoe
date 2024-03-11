@@ -27,9 +27,9 @@ const cached = (func) => {
  * 
  * A map has only one input argument, so you may like to pass in a tuple or other data type if you need more complex input.
  * 
- * A map must obey the following rule:
+ * A map must obey Map Enum Equivalence (MEE):
  * 
- *  - Calling a map with an enum containing data is equivalent to first calling the map with just the symbol of the enum, and subsequently calling the result with just the data of the enum. In other words `map(:foo(data))` must be equivalent to `map(:foo)(data)`.
+ *  - Calling a map with an enum containing data is equivalent to first calling the map with just the symbol of the enum, and subsequently calling the result with just the data of the enum. In other words `map(: :sym(input))` must be equivalent to `(: map:sym)(: input)` for all sym,input.
  * 
  * Accessing a property on a map (`map.foo`) is syntactic sugar for calling the map with the respective symbol (`map(enm.foo)`).
  * 
