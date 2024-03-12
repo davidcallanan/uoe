@@ -165,11 +165,25 @@ await test("semi named tuple", async () => {
 });
 
 await test("tuple parenthesis", async () => {
-	const foo = e`(: 5)`;
-	return await foo() === 5n;
+	const foo = e`(: 5 + 5)`;
+	return await foo() === 10n;
+});
+
+await test("comma nested tuple", async () => {
+	const foo = e`(:name:first "john", :name:last "doe", :age 27)`;
+	return await foo.name.first() === "john" && await foo.name.last() === "doe" && await foo.age() === 27n;
+});
+
+await test("semi nested tuple", async () => {
+	const foo = e`(
+		:name:first "john";
+		:name:last "doe";
+		:age 27;
+	)`;
+	return await foo.name.first() === "john" && await foo.name.last() === "doe" && await foo.age() === 27n;
 });
 
 await test("block parenthesis", async () => {
-	const foo = e`{: 5}`;
-	return await foo() === 5n;
+	const foo = e`{: 5 + 5}`;
+	return await foo() === 10n;
 });

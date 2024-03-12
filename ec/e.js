@@ -107,12 +107,22 @@ const constant_call = mapData(
 	},
 );
 
+const pattern = multi(or(
+	mapData(
+		BARE_SYMBOL,
+		data => ({
+			type: "symbol",
+			sym: data,
+		}),
+	),
+))
+
 const tuple_entry = or(
 	mapData(
-		join(opt(WHITESPACE), BARE_SYMBOL, WHITESPACE, expression),
+		join(opt(WHITESPACE), pattern, WHITESPACE, expression),
 		data => ({
 			type: "mapping_entry",
-			symbol: data[1],
+			patterns: data[1],
 			expression: data[3],
 		}),
 	),
@@ -124,6 +134,41 @@ const tuple_entry = or(
 		}),
 	),
 );
+
+const construct_map = (ctx, entries) => {
+	const root_entries = new Map();
+
+	for (const entry of entries) {
+		const [p0, ...p_rest] = entry.patterns;
+
+		if (p0.type === "symbol" && p0.sym === "") {
+			if (p_rest.length > 0) {
+				throw "Wtf you up to bro";
+			}
+		
+			return entry.expression(ctx);
+		}
+
+		if (p_rest.length === 0) {
+			root_entries.set(p0.sym, () => entry.expression(ctx));
+		} else {
+			throw "Todo";
+		}
+	}
+
+	return map(async (input) => {
+		if (input === undefined) {
+			return undefined;
+		}
+
+		if (is_enm(input)) {
+			const result = root_entries.get(input.sym)();
+			return await result(); // TODO
+		} else {
+			throw new Error("Expected enum. Todo: check for leaf enum here?");
+		}
+	});
+};
 
 tuple.define(mapData(
 	or(
@@ -140,35 +185,31 @@ tuple.define(mapData(
 			}),
 		),
 	),
-	data => (ctx) => {
+	data => {
 		let next_positional_idx = 0;
-		const entries = new Map();
-
-		// TODO: nested syntactic sugar.
+		const entries = [];
 
 		for (let entry of data.entries) {
 			if (entry.type == "positional_entry") {
-				entries.set(`${next_positional_idx++}`, entry.expression(ctx));
+				entries.push({
+					patterns: [{
+						type: "symbol",
+						sym: `${next_positional_idx++}`,
+					}],
+					expression: entry.expression,
+				});
 			} else if (entry.type == "mapping_entry") {
-				if (entry.symbol === "") {
-					return entry.expression(ctx);	
-				}
-
-				entries.set(entry.symbol, entry.expression(ctx));
+				entries.push({
+					patterns: entry.patterns,
+					expression: entry.expression,
+				});
 			}
 		}
 
-		return map(async (input) => {
-			if (input === undefined) {
-				return undefined;
-			}
-
-			if (is_enm(input)) {
-				return await entries.get(input.sym)();
-			} else {
-				throw new Error("Expected enum. Todo: check for leaf enum here?");
-			}
-		});
+		
+		return (ctx) => {
+			return construct_map(ctx, entries);
+		};
 	},
 ));
 
