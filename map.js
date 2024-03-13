@@ -80,7 +80,7 @@ export const map = (get) => {
 				const output = await get_output();
 
 				if (_is_map(output)) {
-					return await output(input)(); //
+					return output(input);
 				}
 
 				return undefined;
