@@ -150,14 +150,31 @@ const construct_map = (ctx, entries) => {
 		}
 
 		if (p_rest.length === 0) {
-			root_entries.set(p0.sym, () => entry.expression(ctx));
+			root_entries.set(p0.sym, {
+				execute: () => entry.expression(ctx),
+			});
 		} else {
-			const next_map = construct_map(ctx, [{
-				patterns: p_rest,
-				expression: entry.expression,
-			}]);
+			if (!root_entries.has(p0.sym)) {
+				root_entries.set(p0.sym, {
+					entries: [{
+						patterns: p_rest,
+						expression: entry.expression,
+					}],
+				});
+			} else {
+				root_entries.get(p0.sym).entries.push({
+					patterns: p_rest,
+					expression: entry.expression,
+				});
+			}
+		}
+	}
 
-			root_entries.set(p0.sym, () => next_map);
+	for (const entry of root_entries.values()) {
+		if (entry.entries !== undefined) {
+			const entries = entry.entries;
+			entry.execute = () => construct_map(ctx, entries);
+			entry.entries = undefined;
 		}
 	}
 
@@ -173,7 +190,7 @@ const construct_map = (ctx, entries) => {
 				return undefined;
 			}
 
-			return entry();
+			return await entry.execute();
 		} else {
 			throw new Error("Expected enum. Todo: check for leaf enum here?");
 		}
@@ -215,7 +232,6 @@ tuple.define(mapData(
 				});
 			}
 		}
-
 		
 		return (ctx) => {
 			return construct_map(ctx, entries);
