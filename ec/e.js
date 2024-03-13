@@ -152,7 +152,12 @@ const construct_map = (ctx, entries) => {
 		if (p_rest.length === 0) {
 			root_entries.set(p0.sym, () => entry.expression(ctx));
 		} else {
-			throw "Todo";
+			const next_map = construct_map(ctx, [{
+				patterns: p_rest,
+				expression: entry.expression,
+			}]);
+
+			root_entries.set(p0.sym, () => next_map);
 		}
 	}
 
@@ -162,8 +167,13 @@ const construct_map = (ctx, entries) => {
 		}
 
 		if (is_enm(input)) {
-			const result = root_entries.get(input.sym)();
-			return await result(); // TODO
+			const entry = root_entries.get(input.sym);
+
+			if (entry === undefined) {
+				return undefined;
+			}
+
+			return entry();
 		} else {
 			throw new Error("Expected enum. Todo: check for leaf enum here?");
 		}
