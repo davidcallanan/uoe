@@ -20,20 +20,28 @@ const unsuspended_promise_ = (promise_like, ctx) => {
 			$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}()` : "()",
 		});
 	}, {
-		get: (_target, prop) => {
+		get: (target, prop) => {
 			if (["then", "catch", "finally"].includes(prop)) {
 				return promise[prop].bind(promise);
+			}
+
+			if (["valueOf", "toString", "toLocaleString"].includes(prop)) {
+				return () => "<uoe/unsuspended_promise>";
+			}
+
+			if (["constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "__proto__"].includes(prop)) {
+				return target[prop];
 			}
 
 			return unsuspended_promise_((async () => {
 				const api = await promise;
 
-				if (typeof api !== "object" || api === null) {
+				if (!["object", "function"].includes(typeof api) || api === null) {
 					if (ctx?.$$$_READING) {
 						throw new TypeError(`Cannot read properties of ${api} (reading '${ctx.$$$_READING}.${prop}')`);
 					}
 
-					throw new TypeError(`Cannot read properties of ${api} (reading '${prop}')`);
+					throw new TypeError(`Cannot read properties of ${api.toString()} (reading '${prop}')`);
 				}
 
 				if (typeof api[prop] === "function") {
