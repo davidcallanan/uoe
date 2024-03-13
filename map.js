@@ -66,7 +66,13 @@ export const map = (get) => {
 		return map((input) => {
 			if (input === undefined) {
 				return unsuspended_promise((async () => {
-					return await get_output();
+					const result = await get_output();
+
+					if (_is_map(result)) {
+						return await result();
+					}
+
+					return result;
 				})());
 			}
 
@@ -74,7 +80,7 @@ export const map = (get) => {
 				const output = await get_output();
 
 				if (_is_map(output)) {
-					return await output(input)();
+					return await output(input)(); //
 				}
 
 				return undefined;
@@ -83,7 +89,7 @@ export const map = (get) => {
 	});
 
 	final_map = new Proxy(raw_map, {
-		get: (_target, prop) => {
+		get: (target, prop) => {
 			if (prop === symbol_is_map) {
 				return true;
 			}
@@ -94,6 +100,14 @@ export const map = (get) => {
 				// If access to `:then` is needed, you must use the property [":then"] or call the map with `enm[":then"]`.
 
 				return undefined;
+			}
+
+			if (["valueOf", "toString", "toLocaleString"].includes(prop)) {
+				return () => "<uoe/map>";
+			}
+
+			if (["constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "__proto__"].includes(prop)) {
+				return target[prop];
 			}
 
 			return raw_map(enm[prop]);
