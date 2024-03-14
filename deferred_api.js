@@ -1,5 +1,5 @@
 import { suspended_api } from "./suspended_api.js";
-import { unsuspended_api } from "./unsuspended_api.js";
+import { unsuspended_promise } from "./unsuspended_promise.js";
 
 /**
  * Creates an async api that can be invoked immediately but where the underlying api can be resolved at a later time.
@@ -8,7 +8,7 @@ import { unsuspended_api } from "./unsuspended_api.js";
  * 
  * Upon invokation of any method, it will first wait for the underlying api to be provided before proceeding.
  * 
- * See `suspended_api` and `unsuspended_api`.
+ * See `suspended_api` and `unsuspended_promise`.
  * 
  * @example
  * 
@@ -23,8 +23,8 @@ import { unsuspended_api } from "./unsuspended_api.js";
  * });
  */
 export const deferred_api = (async_factory) => {
-	const [api_promise, resolve_api] = suspended_api();
-	const api = unsuspended_api(api_promise);
+	const [api_promise, resolve_api] = unsuspended_promise();
+	const api = unsuspended_promise(api_promise);
 	
 	if (async_factory !== undefined) {
 		async_factory().then(resolve_api);
