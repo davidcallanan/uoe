@@ -9,7 +9,7 @@ const unsuspended_promise_ = (promise_like, ctx) => {
 
 			if (typeof api !== "function") {
 				if (ctx?.$$$_READING) {
-					throw new TypeError(`${api} is not a function (reading '${ctx.$$$_READING}')`);
+					throw new TypeError(`${api} is not a function (reading '${ctx.$$$_READING.toString()}')`);
 				}
 				
 				throw new TypeError(`${api} is not a function`);
@@ -29,7 +29,7 @@ const unsuspended_promise_ = (promise_like, ctx) => {
 				return () => "<uoe/unsuspended_promise>";
 			}
 
-			if (["constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "__proto__"].includes(prop)) {
+			if (["constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "__proto__", Symbol.toPrimitive].includes(prop)) {
 				return target[prop];
 			}
 
