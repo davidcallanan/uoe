@@ -1,7 +1,8 @@
 import { test } from "../test.js";
 import { e } from "./e.js";
-import { is_enm } from "../is_enm.js";
+import { is_enum } from "../is_enum.js";
 import { is_map } from "../is_map.js";
+import { map } from "../map.js";
 
 await test("constant", async () => {
 	const number = 123n;
@@ -112,12 +113,12 @@ await test("logical not", async () => {
 
 await test("bare enum", async () => {
 	const foo = await e`:foo`();
-	return is_enm(foo) && foo.sym === "foo";
+	return is_enum(foo) && foo.sym === "foo";
 });
 
 await test("nested bare enum", async () => {
 	const foo = await e`:foo:bar`();
-	return is_enm(foo) && foo.sym === "foo" && is_enm(foo.data) && foo.data.sym === "bar";
+	return is_enum(foo) && foo.sym === "foo" && is_enum(foo.data) && foo.data.sym === "bar";
 });
 
 await test("empty tuple", async () => {
@@ -187,3 +188,37 @@ await test("block parenthesis", async () => {
 	const foo = e`{: 5 + 5}`;
 	return await foo() === 10n;
 });
+
+await test("constant map call", async () => {
+	const result = e`${map(async (input) => {
+		const value = await get_enum(input);
+		return value.sym;
+	})}`;
+	
+	return await result() === "test";
+});
+
+// Todo list
+// - Variables
+// x := 5
+// - Map calls
+// foo:bar
+// foo:baz(5)
+// - Api calls
+// foo:bar!
+// foo:baz(5)!
+// - Self call
+// - Owned contract calls
+// - Tuple pattern match
+// :foo(x, y, z) {...}
+// :foo(: bar) {...}
+// - Block pattern match
+// - If statement
+// if component == :position(x, y, z) {...}
+// if component == :position {...}
+// else if component == :velocity(x, y, z) {...}
+// - Match statement
+// - For loop
+// - Break and continue
+// - Return
+// - Block syntax

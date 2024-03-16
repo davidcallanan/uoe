@@ -10,7 +10,7 @@ import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 import { tup } from "../tup.js";
 import { map } from "../map.js";
 import { unsuspended_map } from "../unsuspended_map.js";
-import { is_enm } from "../is_enm.js";
+import { is_enum } from "../is_enum.js";
 
 // TOKENS
 
@@ -20,6 +20,8 @@ const MULTILINE_COMMENT   = mapData(/^\s*\/\*(.*?)\*\//s, data => data.groups[0]
 const SKIPPERS = opt(multi(or(WHITESPACE, SINGLELINE_COMMENT, MULTILINE_COMMENT)));
 
 const withSkippers = (p) => mapData(join(SKIPPERS, p, SKIPPERS), data => data[1]);
+const withLeftSkippers = (p) => mapData(join(SKIPPERS, p), data => data[1]);
+const withRightSkippers = (p) => mapData(join(p, SKIPPERS), data => data[0]);
 
 const INT = withSkippers(mapData(/^\d+/, data => BigInt(data.groups.all)));
 const FLOAT = withSkippers(mapData(/^\d+\.\d+/, data => parseFloat(data.groups.all)));
@@ -28,6 +30,7 @@ const BARE_CONSTANT = mapData(/^\:\!CONSTANT\$[0-9]\!+/, data => data.groups.all
 const CONSTANT = withSkippers(BARE_CONSTANT);
 const BARE_SYMBOL = mapData(/^\:[a-z0-9_]*/, data => data.groups.all.substring(1));
 const SYMBOL = withSkippers(BARE_SYMBOL);
+const IDENT = withSkippers(/^[a-z_][a-z0-9_]*/, data => data.groups.all);
 const PLUS = withSkippers("+");
 const MINUS = withSkippers("-");
 const MULT = withSkippers("*");
@@ -98,7 +101,7 @@ const constant_call = mapData(
 	join(constant, opt_multi(symbol)),
 	data => (ctx) => {
 		let result = data[0](ctx);
-
+		
 		for (let i = 0; i < data[1].length; i++) {
 			result = result(data[1][i](ctx));
 		}
@@ -115,7 +118,24 @@ const pattern = multi(or(
 			sym: data,
 		}),
 	),
-))
+	mapData(
+		join(BARE_LPAREN, opt_multi(or(
+			mapData(SYMBOL, data => ({
+				type: "named_destructure",
+				sym: data,
+				var_name: data,
+			})),
+			mapData(IDENT, data => ({
+				type: "positional_destructure",
+				var_name: data,
+			})),
+		), COMMA), RPAREN),
+		data => ({
+			type: "map",
+			syms: data[1],
+		}),
+	),
+));
 
 const tuple_entry = or(
 	mapData(
@@ -140,33 +160,37 @@ const construct_map = (ctx, entries) => {
 
 	for (const entry of entries) {
 		const [p0, ...p_rest] = entry.patterns;
-
-		if (p0.type === "symbol" && p0.sym === "") {
-			if (p_rest.length > 0) {
-				throw "Wtf you up to bro";
-			}
 		
-			return entry.expression(ctx);
-		}
+		if (p0.type === "symbol") {
+			if (p0.sym === "") {
+				if (p_rest.length > 0) {
+					throw "Wtf you up to bro";
+				}
+			
+				return entry.expression(ctx);
+			}
 
-		if (p_rest.length === 0) {
-			root_entries.set(p0.sym, {
-				execute: () => entry.expression(ctx),
-			});
-		} else {
-			if (!root_entries.has(p0.sym)) {
+			if (p_rest.length === 0) {
 				root_entries.set(p0.sym, {
-					entries: [{
-						patterns: p_rest,
-						expression: entry.expression,
-					}],
+					execute: () => entry.expression(ctx),
 				});
 			} else {
-				root_entries.get(p0.sym).entries.push({
-					patterns: p_rest,
-					expression: entry.expression,
-				});
+				if (!root_entries.has(p0.sym)) {
+					root_entries.set(p0.sym, {
+						entries: [{
+							patterns: p_rest,
+							expression: entry.expression,
+						}],
+					});
+				} else {
+					root_entries.get(p0.sym).entries.push({
+						patterns: p_rest,
+						expression: entry.expression,
+					});
+				}
 			}
+		} else {
+			throw "Pattern type not implemented";
 		}
 	}
 
@@ -183,7 +207,7 @@ const construct_map = (ctx, entries) => {
 			return undefined;
 		}
 
-		if (is_enm(input)) {
+		if (is_enum(input)) {
 			const entry = root_entries.get(input.sym);
 
 			if (entry === undefined) {
