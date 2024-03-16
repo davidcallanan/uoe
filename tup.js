@@ -1,5 +1,5 @@
 import { map } from "./map.js";
-import { is_enm } from "./is_enm.js";
+import { is_enum } from "./is_enum.js";
 import { enm } from "./enm.js";
 
 const create_tup = (positional_fields, named_fields) => {
@@ -8,7 +8,7 @@ const create_tup = (positional_fields, named_fields) => {
 			input = enm[0];
 		}
 
-		if (is_enm(input)) {
+		if (is_enum(input)) {
 			const pos = parseInt(input.sym);
 
 			if (isNaN(pos)) {

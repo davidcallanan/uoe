@@ -1,5 +1,5 @@
 import { enm } from "./enm.js";
-import { is_enm } from "./is_enm.js";
+import { is_enum } from "./is_enum.js";
 import { is_api } from "./is_api.js";
 import { named_function } from "./named_function.js";
 import { unsuspended_promise } from "./unsuspended_promise.js";
@@ -57,7 +57,7 @@ export const map = (get) => {
 			return get_leaf();
 		}
 		
-		if (is_enm(input) && input.data !== undefined) {
+		if (is_enum(input) && input.data !== undefined) {
 			return raw_map(enm[input.sym])(input.data);
 		}
 
@@ -106,7 +106,7 @@ export const map = (get) => {
 				return () => "<uoe/map>";
 			}
 
-			if (["constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "__proto__"].includes(prop)) {
+			if (["constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "__proto__", Symbol.toPrimitive].includes(prop)) {
 				return target[prop];
 			}
 

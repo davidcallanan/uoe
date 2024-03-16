@@ -66,6 +66,12 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
  * 
  * An enum instance consists of a symbol and optionally some data.
  * 
+ * Replacements:
+ * 
+ *  - [":sym"] -> :sym
+ *  - [":data"] -> :data
+ *  - [":then"] -> :then
+ * 
  * @example
  * 
  * const pet = enm.cat({ name: "Fluffy" });
