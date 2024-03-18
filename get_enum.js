@@ -1,4 +1,5 @@
-import { is_enum } from "./is_enum";
+import { is_enum } from "./is_enum.js";
+import { is_map } from "./is_map.js";
 
 /**
  * Checks if a uoe-map is an enum and subsequently returns it.

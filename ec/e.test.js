@@ -1,8 +1,8 @@
 import { test } from "../test.js";
 import { e } from "./e.js";
-import { is_enum } from "../is_enum.js";
 import { is_map } from "../is_map.js";
 import { map } from "../map.js";
+import { get_enum } from "../get_enum.js";
 
 await test("constant", async () => {
 	const number = 123n;
@@ -193,7 +193,7 @@ await test("constant map call", async () => {
 	const result = e`${map(async (input) => {
 		const value = await get_enum(input);
 		return value.sym;
-	})}`;
+	})}:test`;
 	
 	return await result() === "test";
 });
