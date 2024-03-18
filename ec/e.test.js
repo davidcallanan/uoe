@@ -198,6 +198,20 @@ await test("nested tuple 2", async () => {
 	);
 });
 
+await test("nested tuple 3", async () => {
+	const foo = e`(
+		:friend:john :human(:hair "black");
+		:friend:joe :alien(:eyes "green");
+	)`;
+
+	return (true
+		&& await get_enum(foo.friend.john).sym === "human"
+		&& await get_enum(foo.friend.john).data.hair() === "black"
+		&& await get_enum(foo.friend.joe).sym === "alien"
+		&& await get_enum(foo.friend.joe).data.eyes() === "green"
+	);
+});
+
 await test("block parenthesis", async () => {
 	const foo = e`{: 5 + 5}`;
 	return await foo() === 10n;
