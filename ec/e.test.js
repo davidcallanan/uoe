@@ -184,6 +184,20 @@ await test("semi nested tuple", async () => {
 	return await foo.name.first() === "john" && await foo.name.last() === "doe" && await foo.age() === 27n;
 });
 
+await test("nested tuple 2", async () => {
+	const foo = e`(
+		:friend:john (:name "doe", :age 27);
+		:friend:joe (:name "dohn", :age 27);
+	)`;
+
+	return (true
+		&& await foo.friend.john.name() === "doe"
+		&& await foo.friend.john.age() === 27n
+		&& await foo.friend.joe.name() === "dohn"
+		&& await foo.friend.joe.age() === 27n
+	);
+});
+
 await test("block parenthesis", async () => {
 	const foo = e`{: 5 + 5}`;
 	return await foo() === 10n;
