@@ -3,6 +3,7 @@ import { e } from "./e.js";
 import { is_map } from "../is_map.js";
 import { map } from "../map.js";
 import { get_enum } from "../get_enum.js";
+import { is_enum } from "../is_enum.js";
 
 await test("constant", async () => {
 	const number = 123n;
@@ -224,6 +225,25 @@ await test("constant map call", async () => {
 	})}:test`;
 	
 	return await result() === "test";
+});
+
+await test("self-referential variables", async () => {
+	const foo = e`(
+		:name first_name + " " + last_name;
+		:first_name "john";
+		:last_name "doe";
+	)`;
+
+	return await foo.name() === "john doe";
+});
+
+await test("variables", async () => {
+	const foo = e`(
+		x := 5;
+		: x * 2;
+	)`;
+
+	return await foo() === 10n;
 });
 
 // Todo list

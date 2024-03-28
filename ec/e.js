@@ -7,10 +7,47 @@ import { leaf_map } from "../leaf_map.js";
 
 import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 
-import { tup } from "../tup.js";
 import { map } from "../map.js";
-import { unsuspended_map } from "../unsuspended_map.js";
 import { is_enum } from "../is_enum.js";
+import { enm } from "../enm.js";
+
+// UTILS
+
+class SymbolTable {
+	constructor(parent) {
+		this._table = new Map();
+		this._parent = parent;
+	}
+
+	set(sym, value) {
+		if (this._table.has(sym)) {
+			throw new Error(`Symbol ${sym} already exists`);
+		}
+
+		this._table.set(sym, value);
+	}
+
+	try_set(sym, value) {
+		if (this._table.has(sym)) {
+			return false;
+		}
+
+		this._table.set(sym, value);
+		return true;
+	}
+
+	get(sym) {
+		if (this._table.has(sym)) {
+			return this._table.get(sym);
+		}
+
+		if (this._parent) {
+			return this._parent.get(sym);
+		}
+
+		return undefined;
+	}
+}
 
 // TOKENS
 
@@ -54,6 +91,7 @@ const TRUE = withSkippers("true");
 const FALSE = withSkippers("false");
 const COMMA = withSkippers(",");
 const SEMI = withSkippers(";");
+const WALRUS = withSkippers(":=");
 // Use JavaScript when other operations are needed.
 
 // RULES
@@ -155,7 +193,14 @@ const tuple_entry = or(
 	),
 );
 
-const construct_map = (ctx, entries) => {
+const construct_map = (old_ctx, entries) => {
+	const ctx = {
+		...old_ctx,
+		symbol_table: new SymbolTable(old_ctx.symbol_table),
+	};
+
+	let local;
+
 	const root_entries = new Map();
 
 	for (const entry of entries) {
@@ -171,11 +216,23 @@ const construct_map = (ctx, entries) => {
 			}
 
 			if (p_rest.length === 0) {
+				ctx.symbol_table.try_set(p0.sym, {
+					type: "map_get",
+					map: () => local,
+					sym: p0.sym,
+				});
+
 				root_entries.set(p0.sym, {
 					execute: () => entry.expression(ctx),
 				});
 			} else {
 				if (!root_entries.has(p0.sym)) {
+					ctx.symbol_table.try_set(p0.sym, {
+						type: "map_get",
+						map: () => local,
+						sym: p0.sym,
+					});
+
 					root_entries.set(p0.sym, {
 						entries: [{
 							patterns: p_rest,
@@ -201,8 +258,8 @@ const construct_map = (ctx, entries) => {
 			entry.entries = undefined;
 		}
 	}
-
-	return map(async (input) => {
+	
+	local = map(async (input) => {
 		if (input === undefined) {
 			return undefined;
 		}
@@ -219,6 +276,8 @@ const construct_map = (ctx, entries) => {
 			throw new Error("Expected enum. Todo: check for leaf enum here?");
 		}
 	});
+
+	return local;
 };
 
 tuple.define(mapData(
@@ -281,10 +340,37 @@ atom.define(or(
 	mapData(FLOAT, data => () => leaf_map(data)),
 	mapData(INT, data => () => leaf_map(data)),
 	mapData(STRING, data => () => leaf_map(data)),
-	constant_call,
-	symbol,
 	mapData(TRUE, () => () => leaf_map(true)),
 	mapData(FALSE, () => () => leaf_map(false)),
+	constant_call,
+	symbol,
+	mapData(join(IDENT, WALRUS, expression), data => (ctx) => {
+		const var_name = data[0].groups.all;
+		const right = data[2](ctx);
+		console.log("setting", var_name, "to", right);
+		ctx.symbol_table.set(var_name, {
+			type: "exact",
+			value: right,
+		});
+		return right;
+	}),
+	mapData(IDENT, data => (ctx) => {
+		const var_name = data.groups.all;
+		const value = ctx.symbol_table.get(var_name);
+		
+		if (value === undefined) {
+			throw new Error(`Variable ${var_name} is not defined`);
+		}
+
+		if (value.type === "exact") {
+			return value.value;
+		} else if (value.type === "map_get") {
+			const map = value.map();
+			return map(enm[value.sym]);
+		} else {
+			throw new Error(`Internal error: unknown symbol table value type ${value.type}`);
+		}
+	}),
 	tuple,
 	block,
 ));
@@ -487,6 +573,7 @@ const cache = new Map();
 const run_expr = (input, constants) => {
 	const ctx = {
 		constants,
+		symbol_table: new SymbolTable(),
 	};
 
 	if (cache.has(input)) {
