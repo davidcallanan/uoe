@@ -2,6 +2,22 @@ import { map } from "./map.js";
 import { call_as_async } from "./call_as_async.js";
 
 // TODO: test
+/**
+ * Immediately returns a map equal to that eventually obtained by the given async function.
+ * 
+ * @example
+ * 
+ * const map = unsuspended_map(async () => {
+ *   await timeout(1000);
+ *   return map(() => {
+ *     if (input === undefined) {
+ *       return "foo";
+ *     }
+ *   });
+ * });
+ * 
+ * console.log(await map()); // "foo"
+ */
 export const unsuspended_map = (func) => {
 	const the_map = call_as_async(func);
 
