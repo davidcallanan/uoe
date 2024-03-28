@@ -10,6 +10,8 @@ import { mapData, join, opt, multi, opt_multi, or, declare } from "./blurp.js";
 import { map } from "../map.js";
 import { is_enum } from "../is_enum.js";
 import { enm } from "../enm.js";
+import { create_promise } from "../create_promise.js";
+import { unsuspended_map } from "../unsuspended_map.js";
 
 // UTILS
 
@@ -199,7 +201,8 @@ const construct_map = (old_ctx, entries) => {
 		symbol_table: new SymbolTable(old_ctx.symbol_table),
 	};
 
-	let local;
+	const [prom_local, resolve_local] = create_promise();
+	const local = unsuspended_map(() => prom_local);
 
 	const root_entries = new Map();
 
@@ -218,7 +221,7 @@ const construct_map = (old_ctx, entries) => {
 			if (p_rest.length === 0) {
 				ctx.symbol_table.try_set(p0.sym, {
 					type: "map_get",
-					map: () => local,
+					map: local,
 					sym: p0.sym,
 				});
 
@@ -229,7 +232,7 @@ const construct_map = (old_ctx, entries) => {
 				if (!root_entries.has(p0.sym)) {
 					ctx.symbol_table.try_set(p0.sym, {
 						type: "map_get",
-						map: () => local,
+						map: local,
 						sym: p0.sym,
 					});
 
@@ -259,7 +262,7 @@ const construct_map = (old_ctx, entries) => {
 		}
 	}
 	
-	local = map(async (input) => {
+	const result = map(async (input) => {
 		if (input === undefined) {
 			return undefined;
 		}
@@ -277,7 +280,9 @@ const construct_map = (old_ctx, entries) => {
 		}
 	});
 
-	return local;
+	resolve_local(result);
+
+	return result;
 };
 
 tuple.define(mapData(
@@ -365,8 +370,7 @@ atom.define(or(
 		if (value.type === "exact") {
 			return value.value;
 		} else if (value.type === "map_get") {
-			const map = value.map();
-			return map(enm[value.sym]);
+			return value.map(enm[value.sym]);
 		} else {
 			throw new Error(`Internal error: unknown symbol table value type ${value.type}`);
 		}
