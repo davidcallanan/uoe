@@ -224,9 +224,14 @@ const construct_map = (old_ctx, entries) => {
 					map: local,
 					sym: p0.sym,
 				});
+				
+				const precomputed_value = (async () => {
+					await undefined;
+					return await entry.expression(ctx);
+				})();
 
 				root_entries.set(p0.sym, {
-					execute: () => entry.expression(ctx),
+					execute: () => precomputed_value,
 				});
 			} else {
 				if (!root_entries.has(p0.sym)) {
@@ -257,7 +262,11 @@ const construct_map = (old_ctx, entries) => {
 	for (const entry of root_entries.values()) {
 		if (entry.entries !== undefined) {
 			const entries = entry.entries;
-			entry.execute = () => construct_map(ctx, entries);
+			const precomputed_value = (async () => {
+				await undefined;
+				return construct_map(ctx, entries);
+			})();
+			entry.execute = () => precomputed_value;
 			entry.entries = undefined;
 		}
 	}
