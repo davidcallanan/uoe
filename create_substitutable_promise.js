@@ -1,6 +1,6 @@
 class SubstitutablePromise {
 	constructor(initial_promise) {
-		this._promise = initial_promise;
+		this._promise = initial_promise ?? new Promise(() => {});
 	}
 
 	substitute(promise) {
