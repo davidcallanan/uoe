@@ -1,4 +1,5 @@
 import { as_async } from "./as_async.js";
+import { bind_callable } from "./bind_callable.js";
 import { bind_self } from "./bind_self.js";
 import { callable } from "./callable.js";
 import { named_function } from "./named_function.js";
@@ -54,7 +55,7 @@ export const create_async_factory = (cls) => {
 		const result = new Proxy(adjusted_obj, {
 			get(target, key) {
 				if (typeof target[key] === "function") {
-					return target[key].bind(target);
+					return bind_callable(target[key], target);
 				}
 
 				return target[key];

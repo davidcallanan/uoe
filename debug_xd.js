@@ -23,6 +23,10 @@ const extra_data = new WeakMap();
  * }}
  */
 export const debug_xd = (obj) => {
+	if (obj === undefined) {
+		return {};
+	}
+	
 	if (extra_data.has(obj)) {
 		return extra_data.get(obj);
 	}
