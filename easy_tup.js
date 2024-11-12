@@ -1,17 +1,15 @@
 /**
- * @deprecated
- * 
  * Constructs an object containing both positional and named fields.
  * 
  * Not to be confused with a uoe tuple.
  * 
  * @example
  * 
- * sum_vectors(tup(1, 2), tup(3, 4));
+ * sum_vectors(easy_tup(1, 2), easy_tup(3, 4));
  * 
  * @example
  * 
- * const person = tup("John", "Doe")({
+ * const person = easy_tup("John", "Doe")({
  *   age: 30,
  * });
  */
