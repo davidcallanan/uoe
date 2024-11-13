@@ -1,6 +1,9 @@
 import { bind_callable } from "./bind_callable.js";
 
 const unsuspended_promise_ = (promise_like, ctx) => {
+	// Note: In this code we manually use `String` as some objects, such as Symbols, do not convert implicitely to strings, even within template literals.
+	// The use of `toString` is avoided in favour of `String`, a less error-prone alternative.
+
 	const promise = Promise.resolve(promise_like);
 
 	return new Proxy((...args) => {
@@ -38,10 +41,10 @@ const unsuspended_promise_ = (promise_like, ctx) => {
 
 				if (!["object", "function"].includes(typeof api) || api === null) {
 					if (ctx?.$$$_READING) {
-						throw new TypeError(`Cannot read properties of ${api} (reading '${ctx.$$$_READING}.${prop}')`);
+						throw new TypeError(`Cannot read properties of ${String(api)} (reading '${String(ctx.$$$_READING)}.${String(prop)}')`);
 					}
 
-					throw new TypeError(`Cannot read properties of ${api.toString()} (reading '${prop}')`);
+					throw new TypeError(`Cannot read properties of ${String(api)} (reading '${String(prop)}')`);
 				}
 
 				if (typeof api[prop] === "function") {
@@ -50,7 +53,7 @@ const unsuspended_promise_ = (promise_like, ctx) => {
 
 				return api[prop];
 			})(), {
-				$$$_READING: ctx?.$$$_READING ? `${ctx.$$$_READING}.${prop}` : prop,
+				$$$_READING: ctx?.$$$_READING ? `${String(ctx.$$$_READING)}.${String(prop)}` : prop,
 			});
 		},
 	});
