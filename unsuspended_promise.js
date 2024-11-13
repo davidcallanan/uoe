@@ -39,7 +39,14 @@ const unsuspended_promise_ = (promise_like, ctx) => {
 			return unsuspended_promise_((async () => {
 				const api = await promise;
 
-				if (!["object", "function"].includes(typeof api) || api === null) {
+				if (false
+					// Motivation: In mirroring JavaScript's property access,
+					// we claim that `null` and `undefined` are the only two
+					// cases where property access results in a TypeError
+					// being thrown.
+					|| api === null
+					|| api === undefined
+				) {
 					if (ctx?.$$$_READING) {
 						throw new TypeError(`Cannot read properties of ${String(api)} (reading '${String(ctx.$$$_READING)}.${String(prop)}')`);
 					}
