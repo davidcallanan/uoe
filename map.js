@@ -6,7 +6,12 @@ import { unsuspended_promise } from "./unsuspended_promise.js";
 
 const symbol_is_map = Symbol("is_map");
 
-export const _is_map = (obj) => typeof obj === "function" && obj[symbol_is_map];
+export const _is_map = (obj) => {
+	return (true
+		&& typeof obj === "function"
+		&& obj[symbol_is_map] === true
+	);
+};
 
 const nil = Symbol("nil");
 

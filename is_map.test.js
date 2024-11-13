@@ -1,6 +1,7 @@
 import { test } from "./test.js";
 import { map } from "./map.js";
 import { is_map } from "./is_map.js";
+import { unsuspended_promise } from "./unsuspended_promise.js";
 
 test("primitive", () => {
 	return (true
@@ -24,4 +25,9 @@ test("non-primitive", () => {
 
 test("map", () => {
 	return is_map(map(() => {})) === true;
+});
+
+test("unsuspended promise", () => {
+	const promise = unsuspended_promise(map(() => {}));
+	return is_map(promise) === false;
 });
