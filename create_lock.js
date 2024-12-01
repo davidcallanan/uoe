@@ -25,7 +25,7 @@ export const create_lock = () => {
 				const [promise, res, _rej] = create_promise();
 				outstanding_promises.push(res);
 				return promise;
-			});
+			})();
 	
 			const result = await callback();
 	
