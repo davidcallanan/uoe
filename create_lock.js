@@ -27,7 +27,12 @@ export const create_lock = () => {
 				return promise;
 			})();
 	
-			const result = await callback();
+			try {
+				var result = await callback();
+			} catch (e) {
+				console.error(e);
+				console.warn("Alert! Lock released following error.");
+			}
 	
 			(async () => {
 				if (outstanding_promises.length > 0) {
