@@ -1,5 +1,6 @@
 import { create_promise } from "./create_promise.js";
 import { build_obj } from "./build_obj.js";
+import { call_as_async } from "./call_as_async.js";
 
 /**
  * Creates a simple lock object with two methods, `acquire` and `acquire_immediately`.
