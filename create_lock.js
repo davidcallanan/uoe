@@ -1,4 +1,4 @@
-import { create_promise } from "./create_promise.ts";
+import { create_promise } from "./create_promise.js";
 import { build_obj } from "./build_obj.js";
 
 /**
@@ -6,7 +6,7 @@ import { build_obj } from "./build_obj.js";
  * 
  * The `acquire` method takes a callback and returns the callback's return value.
  * 
- * The `acquire_immediately` method will try to acquire the lock immediately and will invoke the callback with a boolean indicating whether the lock was succesful.
+ * The `acquire_immediately` method will try to acquire the lock immediately, returning an object with both `.was_acquired` immediate and `.result` promise.
  * 
  * This implementation is prone to circular deadlocks.
  */
@@ -47,21 +47,32 @@ export const create_lock = () => {
 		},
 		async acquire_immediately(callback) {
 			if (is_locked) {
-				return await callback(false);
+				return {
+					was_acquired: false,
+					result: undefined,	
+				};
 			} else {
 				is_locked = true;
-				const result = await callback(true);
-	
-				(async () => {
-					if (outstanding_promises.length > 0) {
-						const resolve = outstanding_promises.shift();
-						resolve();
-					} else {
-						is_locked = false;
-					}
-				})();
-	
-				return result;
+				
+				const [result, res_result] = create_promise();
+
+				call_as_async(callback).then((result) => {
+					res_result(result);
+
+					(async () => {
+						if (outstanding_promises.length > 0) {
+							const resolve = outstanding_promises.shift();
+							resolve();
+						} else {
+							is_locked = false;
+						}
+					})();
+				});
+
+				return {
+					was_acquired: true,
+					result,
+				};
 			}
 		},
 	}, (o) => ({
