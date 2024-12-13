@@ -1,4 +1,4 @@
-import { create_promise } from "./create_promise.ts";
+import { create_promise } from "./create_promise.js";
 
 /**
  * Creates a pub-sub where values are discarded for a subscriber if the subscriber is not actively consuming values.
