@@ -42,7 +42,7 @@ export const create_async_factory = (cls) => {
 
 	return async (...args) => {
 		const obj = new cls(...args);
-		obj._init && await obj._init();
+		obj._init && await obj._init(...args);
 
 		const adjusted_obj = obj._call !== undefined
 			? callable(
