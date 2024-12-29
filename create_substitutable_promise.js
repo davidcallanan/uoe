@@ -43,6 +43,8 @@ class SubstitutablePromise {
 }
 
 /**
+ * @stability 2 - provisional
+ * 
  * Creates a special promise that can be substituted with another promise.
  * 
  * The `exposed` method returns a promise that resolves to the currently substituted promise.

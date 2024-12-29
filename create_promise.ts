@@ -1,4 +1,6 @@
 /**
+ * @stability 4 - locked
+ * 
  * A nicer way to create promises. No-one can disagree.
  * 
  * @example

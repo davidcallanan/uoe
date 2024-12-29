@@ -1,6 +1,8 @@
 const extra_data = new WeakMap();
 
 /**
+ * @stability 4 - locked
+ * 
  * This function allows you to attach extra data to any object for temporary debugging purposes.
  * It essentially allows you to carry some data around that is tied to / associated with an object.
  * It is especially useful for objects that make it difficult to hackishly modify custom properties in moments of debugging.

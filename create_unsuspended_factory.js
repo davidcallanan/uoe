@@ -2,6 +2,8 @@ import { create_async_factory } from "./create_async_factory.js";
 import { unsuspended_promise } from "./unsuspended_promise.js";
 
 /**
+ * @stability 2 - provisional
+ * 
  * @example
  * 
  * class Api {

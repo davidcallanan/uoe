@@ -2,6 +2,8 @@ import { suspended_api } from "./suspended_api.js";
 import { unsuspended_promise } from "./unsuspended_promise.js";
 
 /**
+ * @stability 2 - provisional
+ * 
  * Creates an async api that can be invoked immediately but where the underlying api can be resolved at a later time.
  * 
  * This allows you to defer the initialization of an api until it is an appropriate time to do so, for example, until certain parameters or services are available that this api requires.

@@ -1,4 +1,6 @@
 /**
+ * @stability 1 - experimental
+ * 
  * Creates a sync factory that returns an async api which waits for an underlying factory to be resolved and then waits for an underlying api to be instantiated.
  * 
  * The returned factory will suffer from all errors not being reported. If the underlying factory reports errors, these errors will instead be delayed to invocations of the api as internal errors.

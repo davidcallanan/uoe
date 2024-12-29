@@ -32,6 +32,8 @@ class PromiseQueue {
 }
 
 /**
+ * @stability 2 - provisional
+ * 
  * Allows you to await a bunch of promises while adding additional promises to the queue which are subsequently awaited too.
  * 
  * The `add` method takes in a promise and adds this promise to the queue.

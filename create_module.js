@@ -4,6 +4,8 @@ import { is_map } from "./is_map.js";
 import { pattern_map } from "./pattern_map.js";
 
 /**
+ * @stability 1 - experimental
+ * 
  * Creates a module which is an intermediate organizational tool for building a map.
  * 
  * It handles:

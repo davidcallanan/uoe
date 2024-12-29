@@ -1,4 +1,6 @@
 /**
+ * @stability 3 - stable
+ * 
  * Calculates the distance between two lat/long locations on a sphere as the crow flies.
  * 
  * This function was adapted from https://stackoverflow.com/q/18883601/1541397
