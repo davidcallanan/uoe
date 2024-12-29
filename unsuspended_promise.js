@@ -67,6 +67,8 @@ const unsuspended_promise_ = (promise_like, ctx) => {
 };
 
 /**
+ * @stability 3 - stable
+ * 
  * An almost drop-in replacement for promises. Takes in a promise-like or non-promise value and returns a glorified promise. Analogous to `Promise.resolve`. 
  * 
  * Unsuspended promises incorporate an unsuspension mechanism. 

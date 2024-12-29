@@ -1,4 +1,6 @@
 /**
+ * @stability 2 - provisional
+ * 
  * Converts a uoe-error into a JavaScript error and throws it.
  */
 export const throw_error = (body) => {

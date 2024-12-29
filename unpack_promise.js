@@ -1,4 +1,6 @@
 /**
+ * @stability 4 - locked
+ * 
  * Obtains and splits a promise into its individual `then`, `catch`, and `finally` components, already bound and ready to be destructured.
  * 
  * The given object is forced to be a promise using `Promise.resolve`.

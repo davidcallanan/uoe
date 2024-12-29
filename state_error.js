@@ -1,5 +1,8 @@
 import { state_not_found_error } from "./state_not_found_error.js";
 
+/**
+ * @stability 2 - provisional
+ */
 export const state_error = (name, message, cause) => {
 	if (name === "not_found") {
 		return state_not_found_error(name, message, cause);

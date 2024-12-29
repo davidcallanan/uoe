@@ -1,3 +1,6 @@
+/**
+ * @stability 2 - provisional
+ */
 export const user_error = (message, cause) => ({
 	status: "error",
 	error_type: "user_error",
