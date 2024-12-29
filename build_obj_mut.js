@@ -1,4 +1,6 @@
 /**
+ * @stability 2 - provisional
+ * 
  * Similar to `build_obj` except that each steps mutates the initial object.
  * The first argument is taken as-is, and the remaining arguments are treated as steps.
  * This means fancy objects like functions can be passed in as the first argument.

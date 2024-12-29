@@ -3,6 +3,8 @@ import { build_obj } from "./build_obj.js";
 import { call_as_async } from "./call_as_async.js";
 
 /**
+ * @stability 2 - provisional
+ * 
  * Creates a simple lock object with two methods, `acquire` and `acquire_immediately`.
  * 
  * The `acquire` method takes a callback and returns the callback's return value.

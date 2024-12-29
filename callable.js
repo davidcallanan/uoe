@@ -1,6 +1,7 @@
 const WARN_ON_CALLABLE_NON_FUNCTION = true;
 
 /**
+ * @stability 3 - stable
  * Makes an object callable.
  * 
  * Returns a resulting object such that when the object is called, the provided function is invoked.

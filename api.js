@@ -3,6 +3,8 @@ import { unsuspended_promise } from "./unsuspended_promise.js";
 const apis = new WeakSet();
 
 /**
+ * @stability 1 - experimental
+ * 
  * A uoe-api is a potentially indeterminstic function that may have side effects. It is the least-restrictive concept of a function.
  * 
  * An api does not take in any further arguments, and can merely be executed.

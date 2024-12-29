@@ -1,4 +1,6 @@
 /**
+ * @stability 1 - experimental
+ * 
  * Creates an async iterable that caches the results of an async iterator.
  * 
  * This allows for immediate re-iteration.

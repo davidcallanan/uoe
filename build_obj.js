@@ -1,4 +1,6 @@
 /**
+ * @stability 3 - stable
+ * 
  * Builds an object in multiple steps, where each step can access the accumulated properties of the previous steps.
  * 
  * Each passed-in argument represents a step.

@@ -4,6 +4,7 @@ import { internal_error } from "./error.js";
 
 /**
  * @deprecated
+ * @stability 0 - deprecated
  */
 export const create_func_factory = (cls) => {
 	return unsuspended_factory(async (...args) => {

@@ -12,6 +12,7 @@ const syntactic_sugar = (uly_map) => {
 
 /**
  * @deprecated
+ * @stability 0 - deprecated
  * 
  * `m` is for dependency on another map
  * `s` is for dependency on services (essentially everything else for the time being)
