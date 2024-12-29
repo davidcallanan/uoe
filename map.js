@@ -28,6 +28,8 @@ const cached = (func) => {
 };
 
 /**
+ * @stability 2 - provisional
+ * 
  * A map is the uoe standard for a determinstic function.
  * 
  * A map has only one input argument, so you may like to pass in a tuple or other data type if you need more complex input.

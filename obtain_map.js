@@ -2,6 +2,8 @@ import { map } from "./map.js";
 import { is_map } from "./is_map.js";
 
 /**
+ * @stability 2 - provisional
+ * 
  * Creates a map immediately from a promise-like to a map.
  * 
  * Immediately returns a map equal to that eventually obtained by the given promise.

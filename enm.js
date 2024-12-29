@@ -62,6 +62,8 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 });
 
 /**
+ * @stability 2 - provisional
+ * 
  * Constructs a uoe-enum instance, which behaves like a tagged union.
  * 
  * An enum instance consists of a symbol and optionally some data.

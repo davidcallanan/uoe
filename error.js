@@ -1,5 +1,10 @@
 /**
  * @deprecated
+ * @stability 0 - deprecated
+ * 
+ * @see user_error.js
+ * @see state_error.js
+ * @see internal_error.js
  */
 
 // In my opinion there are only three fundamental categories of errors.

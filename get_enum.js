@@ -3,6 +3,8 @@ import { is_map } from "./is_map.js";
 import { unsuspended_promise } from "./unsuspended_promise.js";
 
 /**
+ * @stability 1 - experimental
+ * 
  * Checks if a uoe-map is an enum and subsequently returns it.
  */
 export const get_enum = unsuspended_promise(async (object) => {

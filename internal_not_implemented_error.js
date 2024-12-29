@@ -1,3 +1,6 @@
+/**
+ * @stability 2 - provisional
+ */
 export const internal_not_implemented_error = () => ({
 	status: "error",
 	error_type: "internal_error",

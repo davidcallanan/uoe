@@ -2,7 +2,9 @@ import { map } from "./map.js";
 import { is_map } from "./is_map.js";
 
 /**
- * Constructs a uoe map object with only a single leaf value.
+ * @stability 2 - provisional
+ * 
+ * Constructs a uoe-map object with only a single leaf value.
  * 
  * @example
  * 

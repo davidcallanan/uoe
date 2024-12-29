@@ -1,4 +1,6 @@
 /**
+ * @stability 2 - provisional
+ * 
  * Checks if an object is a uoe-enum instance.
  * 
  * See `enum`.

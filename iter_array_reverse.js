@@ -1,4 +1,6 @@
 /**
+ * @stability 3 - stable
+ * 
  * Iterates an array in reverse.
 */
 
