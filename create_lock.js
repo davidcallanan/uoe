@@ -1,6 +1,84 @@
 import { create_promise } from "./create_promise.js";
-import { build_obj } from "./build_obj.js";
 import { call_as_async } from "./call_as_async.js";
+import { create_sync_factory } from "./create_sync_factory.js";
+
+const LOCK_ERROR_MSG = `Developer Alert [Critical]
+A lock is permanently locked due to an exception.
+There is no process in place to detect this incident.
+A safety invariant would be broken if this lock were automatically released.
+If this is a routine error, the developer is expected to process the error in a non-disruptive manner.`;
+
+class Lock {
+	_init() {
+		this._is_locked = false;
+		this._outstanding_promises = [];
+	}
+	
+	_next_outstanding() {
+		(async () => {
+			if (this._outstanding_promises.length > 0) {
+				const resolve = this._outstanding_promises.shift();
+				resolve();
+			} else {
+				this._is_locked = false;
+			}
+		})();
+	}
+
+	async acquire(callback) {
+		await (() => {
+			if (!this._is_locked) {
+				this._is_locked = true;
+				return Promise.resolve();
+			}
+
+			const [promise, res, _rej] = create_promise();
+			this._outstanding_promises.push(res);
+			return promise;
+		})();
+
+		try {
+			var result = await call_as_async(callback);
+		} catch (e) {
+			console.error(LOCK_ERROR_MSG);
+			throw e;
+		}
+
+		this._next_outstanding();
+
+		return result;
+	}
+
+	async acquire_immediately(callback) {
+		if (this._is_locked) {
+			return {
+				was_acquired: false,
+				result: undefined,	
+			};
+		} else {
+			this._is_locked = true;
+			
+			const [result, res_result, rej_result] = create_promise();
+
+			call_as_async(callback).then((result) => {
+				res_result(result);
+				this._next_outstanding();
+			}).catch((e) => {
+				console.error(LOCK_ERROR_MSG);
+				throw e;
+			});
+
+			return {
+				was_acquired: true,
+				result,
+			};
+		}
+	}
+	
+	acquireImmediately(...args) {
+		return this.acquire_immediately(...args);
+	}
+}
 
 /**
  * @stability 2 - provisional
@@ -13,74 +91,5 @@ import { call_as_async } from "./call_as_async.js";
  * 
  * This implementation is prone to circular deadlocks.
  */
-export const create_lock = () => {
-	let is_locked = false;
-	const outstanding_promises = [];
-	
-	return build_obj({
-		async acquire(callback) {
-			await (() => {
-				if (!is_locked) {
-					is_locked = true;
-					return Promise.resolve();
-				}
-	
-				const [promise, res, _rej] = create_promise();
-				outstanding_promises.push(res);
-				return promise;
-			})();
-	
-			try {
-				var result = await callback();
-			} catch (e) {
-				console.error(e);
-				console.warn("Alert! Lock released following error.");
-			}
-	
-			(async () => {
-				if (outstanding_promises.length > 0) {
-					const resolve = outstanding_promises.shift();
-					resolve();
-				} else {
-					is_locked = false;
-				}
-			})();
-	
-			return result;
-		},
-		async acquire_immediately(callback) {
-			if (is_locked) {
-				return {
-					was_acquired: false,
-					result: undefined,	
-				};
-			} else {
-				is_locked = true;
-				
-				const [result, res_result] = create_promise();
-
-				call_as_async(callback).then((result) => {
-					res_result(result);
-
-					(async () => {
-						if (outstanding_promises.length > 0) {
-							const resolve = outstanding_promises.shift();
-							resolve();
-						} else {
-							is_locked = false;
-						}
-					})();
-				});
-
-				return {
-					was_acquired: true,
-					result,
-				};
-			}
-		},
-	}, (o) => ({
-		acquireImmediately: o.acquire_immediately,
-	}));
-};
-
+export const create_lock = create_sync_factory(Lock);
 export const createLock = create_lock;
