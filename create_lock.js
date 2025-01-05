@@ -4,9 +4,9 @@ import { create_sync_factory } from "./create_sync_factory.js";
 
 const LOCK_ERROR_MSG = `Developer Alert [Critical]
 A lock is permanently locked due to an exception.
-There is no process in place to detect this incident.
+There is no exposed process in place to detect this incident.
 A safety invariant would be broken if this lock were automatically released.
-If this is a routine error, the developer is expected to process the error in a non-disruptive manner.`;
+If this is a routine error, the developer should have instead processed the error in a non-disruptive manner.`;
 
 class Lock {
 	_init() {
@@ -26,16 +26,15 @@ class Lock {
 	}
 
 	async acquire(callback) {
-		await (() => {
-			if (!this._is_locked) {
-				this._is_locked = true;
-				return Promise.resolve();
-			}
+		if (!this._is_locked) {
+			this._is_locked = true;
+			return Promise.resolve();
+		}
 
-			const [promise, res, _rej] = create_promise();
-			this._outstanding_promises.push(res);
-			return promise;
-		})();
+		const [promise, res] = create_promise();
+		this._outstanding_promises.push(res);
+		
+		await promise;
 
 		try {
 			var result = await call_as_async(callback);
@@ -89,7 +88,9 @@ class Lock {
  * 
  * The `acquire_immediately` method will try to acquire the lock immediately, returning an object with both `.was_acquired` immediate and `.result` promise.
  * 
- * This implementation is prone to circular deadlocks.
+ * This implementation is prone to deadlocks across multiple locks.
+ * 
+ * See the monolithic `create_multi_lock` as a potential mitigation to deadlocks.
  */
 export const create_lock = create_sync_factory(Lock);
 export const createLock = create_lock;
