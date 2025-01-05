@@ -9,7 +9,7 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
 		}
 
 		if (prop === "then") {
-			// Due to nested promise flattening, we cannot allow a map to be promise-like.
+			// This is a special case in response to "Note 0000" (`notes/0000_promise_flattening.md`).
 			// We must forcefully undefine the `then` property, as otherwise it would be classified as a "thenable".
 			// If access to `:then` is needed, you must use the property [":then"] instead.
 
@@ -67,6 +67,8 @@ const syntactic_sugar = (overall, curr) => new Proxy(curr ?? {}, {
  * Constructs a uoe-enum instance, which behaves like a tagged union.
  * 
  * An enum instance consists of a symbol and optionally some data.
+ * 
+ * The structure of an enum instance is `{ sym, data }`.
  * 
  * Replacements:
  * 
