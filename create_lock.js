@@ -26,15 +26,16 @@ class Lock {
 	}
 
 	async acquire(callback) {
+		const [when_should_proceed, res] = create_promise();
+		
 		if (!this._is_locked) {
 			this._is_locked = true;
-			return Promise.resolve();
+			res();
+		} else {
+			this._outstanding_promises.push(res);		
 		}
-
-		const [promise, res] = create_promise();
-		this._outstanding_promises.push(res);
 		
-		await promise;
+		await when_should_proceed;
 
 		try {
 			var result = await call_as_async(callback);
