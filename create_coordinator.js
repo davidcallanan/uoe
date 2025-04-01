@@ -1,4 +1,5 @@
 import { create_lock } from "./create_lock.js";
+import { create_promise } from "./create_promise.js";
 import { create_unsuspended_factory } from "./create_unsuspended_factory.js";
 
 const apply = (map, scope) => {
@@ -32,10 +33,9 @@ class Coordinator {
 		this._tx_queue = [];
 		this._scopes_queued = new Map();
 		this._scopes_ongoing = new Map();
-		this._lock = create_lock();
 	}
 
-	async _run_now(scope, callback) {
+	async _run_now(scope, callback, resolve) {
 		apply(this._scopes_ongoing, scope);
 		
 		try {
@@ -47,40 +47,41 @@ class Coordinator {
 		
 		unapply(this._scopes_queued, scope);
 		unapply(this._scopes_ongoing, scope);
+		resolve();
 		this._run_next_transactions();
 	}
 	
 	async _run_next_transactions() {
-		return await this._lock.acquire(() => {
-			const scopes_queued = new Map();
+		const scopes_queued = new Map();
+		
+		for (let i = 0; i < Math.min(this._tx_queue.length, 16); i++) {
+			const { scope, callback, resolve } = this._tx_queue[i];
 			
-			for (let i = 0; i < Math.min(this._tx_queue.length, 16); i++) {
-				const { scope, callback } = this._tx_queue[i];
-				
-				if (true
-					&& safe_to_run(scopes_queued, scope)
-					&& safe_to_run(this._scopes_ongoing, scope)
-				) {
-					this._tx_queue.splice(i--, 1);
-					this._run_now(scope, callback);
-				}
-				
-				apply(scopes_queued, scope);
+			if (true
+				&& safe_to_run(scopes_queued, scope)
+				&& safe_to_run(this._scopes_ongoing, scope)
+			) {
+				this._tx_queue.splice(i--, 1);
+				this._run_now(scope, callback, resolve);
 			}
-		});
+			
+			apply(scopes_queued, scope);
+		}
 	}
 	
 	async run_transaction(scope, callback) {
-		return await this._lock.acquire(() => {
-			const should_run_now = safe_to_run(this._scopes_queued, scope);
-			apply(this._scopes_queued, scope);
-			
-			if (should_run_now) {
-				this._run_now(scope, callback);
-			} else {
-				this._tx_queue.push({ scope, callback });
-			}
-		});
+		const [promise, resolve, _reject] = create_promise();
+		
+		const should_run_now = safe_to_run(this._scopes_queued, scope);
+		apply(this._scopes_queued, scope);
+		
+		if (should_run_now) {
+			this._run_now(scope, callback, resolve);
+		} else {
+			this._tx_queue.push({ scope, callback, resolve });
+		}
+		
+		return await promise;
 	}
 }
 
