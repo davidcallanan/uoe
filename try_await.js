@@ -1,3 +1,5 @@
+import { enm } from "./enm.js";
+
 /**
  * Tries to await a promise and resolves with `:ok(value)` if the promise resolved or `:err(error)` if the promise rejected.
  */
