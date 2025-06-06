@@ -1,6 +1,7 @@
 import { is_enum } from "./is_enum.js";
 import { is_map } from "./is_map.js";
 import { map } from "./map.js";
+import { obtain_map } from "./obtain_map.js";
 
 /**
  * @stability 1 - experimental
@@ -41,7 +42,7 @@ import { map } from "./map.js";
  *   });
  * });
  */
-export const unpacker_map = (unpacker) => {
+export const unpacker_map = (unpacker) => obtain_map((async () =>{
 	let self_ret = undefined;
 	let self_call = undefined;
 	let self_fall = undefined;
@@ -117,7 +118,7 @@ export const unpacker_map = (unpacker) => {
 		},
 	});
 	
-	unpacker(builder);
+	await unpacker(builder);
 	
 	const symbol_maps = new Map();
 	
@@ -171,4 +172,4 @@ export const unpacker_map = (unpacker) => {
 			return self_fall(input);
 		}
 	});
-};
+})());
