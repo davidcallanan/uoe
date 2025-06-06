@@ -129,7 +129,7 @@ await test("map call returning maps sugar", async () => {
 	
 	return (true
 		&& await m.greet(person).option_a() === "Hello, Jim!"
-		&& await m.converse(person).option_b() === "Bye, Jim!"
+		&& await m.greet(person).option_b() === "Bye, Jim!"
 	);
 });
 
