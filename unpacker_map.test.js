@@ -160,12 +160,21 @@ await test("api calls", async () => {
 	);
 });
 
-await test("fancy api calls", async () => {
+await test("fancy api call sugar", async () => {
 	const m = unpacker_map(($) => {
 		$.query_foo.$ret_api(($) => {
 			$.foo.$ret("bar");
 		});
+		
+		$.query_bar.$call_api(async (input, $) => {
+			$.bar.$ret(`baz ${await input.dat()}`);
+		});
 	});
 	
-	return await m.query_foo().foo() === "bar";
+	return (true
+		&& await m.query_foo().foo() === "bar"
+		&& await m.query_bar(unpacker_map(($) => {
+			$.dat.$ret("lipsum");
+		}))().bar() === "baz lipsum"
+	);
 });

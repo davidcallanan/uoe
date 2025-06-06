@@ -99,6 +99,28 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 				};
 			}
 			
+			if (prop === "$call_api") {
+				return (callback) => {
+					self_call = (input) => {
+						return api(async () => {
+							const [explicit_prom, res_explicit, _rej] = create_promise();
+				
+							const implicit = unpacker_map(async ($) => {
+								res_explicit(await callback(input, $));
+							});
+							
+							const explicit = await explicit_prom;
+							
+							if (explicit !== undefined) {
+								return explicit;
+							}
+							
+							return implicit;
+						});
+					};
+				};
+			}
+			
 			if (/^[a-zA-Z0-9_]+$/.test(prop)) {
 				return new Proxy((unpacker) => {
 					symbols.set(prop, symbols.get(prop) ?? {});
@@ -109,6 +131,13 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 							return (callback) => {
 								symbols.set(prop, symbols.get(prop) ?? {});
 								symbols.get(prop).call = callback;
+							};
+						}
+						
+						if (nested_prop === "$call_api") {
+							return (callback) => {
+								symbols.set(prop, symbols.get(prop) ?? {});
+								symbols.get(prop).call_api = callback;
 							};
 						}
 						
@@ -165,6 +194,10 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 			
 			if (entry.call !== undefined) {
 				$.$call(entry.call);
+			}
+			
+			if (entry.call_api !== undefined) {
+				$.$call_api(entry.call_api);
 			}
 			
 			if (entry.fall !== undefined) {
