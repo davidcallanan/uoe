@@ -118,6 +118,7 @@ await test("map calls returning maps async", async () => {
 await test("map call returning maps sugar", async () => {
 	const m = unpacker_map(($) => {
 		$.greet.$call(async (input, $) => {
+			$.$ret(await input.name());
 			$.option_a.$ret(`Hello, ${await input.name()}!`);
 			$.option_b.$ret(`Bye, ${await input.name()}!`);
 		});
@@ -128,6 +129,7 @@ await test("map call returning maps sugar", async () => {
 	});
 	
 	return (true
+		&& await m.greet(person)() === "Jim"
 		&& await m.greet(person).option_a() === "Hello, Jim!"
 		&& await m.greet(person).option_b() === "Bye, Jim!"
 	);
@@ -135,12 +137,25 @@ await test("map call returning maps sugar", async () => {
 
 await test("api calls", async () => {
 	const m = unpacker_map(($) => {
-		$.query_foo.$ret(api(async () => {
+		$.query_foo.$ret(api(() => {
 			return unpacker_map(($) => {
 				$.foo.$ret("bar");
-			})
+			});
 		}));
+		
+		$.query_bar.$call((input, $) => {
+			$.$ret(api(() => {
+				return unpacker_map(async ($) => {
+					$.bar.$ret(`baz ${await input.dat()}`);
+				});
+			}));
+		});
 	});
 	
-	return await m.query_foo().foo() === "bar";
+	return (true
+		&& await m.query_foo().foo() === "bar"
+		&& await m.query_bar(unpacker_map(($) => {
+			$.dat.$ret("lipsum");
+		}))().bar() === "baz lipsum"
+	);
 });
