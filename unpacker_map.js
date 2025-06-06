@@ -137,7 +137,7 @@ export const unpacker_map = (unpacker) => {
 		}));
 	}
 	
-	return map(async (input) => {
+	return map((input) => {
 		if (true
 			&& !is_map(input)
 			&& !is_enum(input)
@@ -150,25 +150,25 @@ export const unpacker_map = (unpacker) => {
 			&& self_ret !== undefined
 			&& input === undefined
 		) {
-			return await self_ret();
+			return self_ret();
 		}
 		
 		if (true
 			&& self_call !== undefined
 			&& is_map(input)
 		) {
-			return await self_call(input);
+			return self_call(input);
 		}
 		
 		if (true
 			&& is_enum(input)
 			&& symbol_maps.get(input.sym) !== undefined
 		) {
-			return await symbol_maps.get(input.sym);
+			return symbol_maps.get(input.sym);
 		}
 		
 		if (self_fall !== undefined) {
-			return await self_fall(input);
+			return self_fall(input);
 		}
 	});
 };
