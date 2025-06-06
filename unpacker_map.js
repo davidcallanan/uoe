@@ -2,6 +2,7 @@ import { is_enum } from "./is_enum.js";
 import { is_map } from "./is_map.js";
 import { map } from "./map.js";
 import { obtain_map } from "./obtain_map.js";
+import { create_promise } from "./create_promise.js";
 
 /**
  * @stability 1 - experimental
@@ -138,7 +139,7 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 		}));
 	}
 	
-	return map((input) => {
+	return map(async (input) => {
 		if (true
 			&& !is_map(input)
 			&& !is_enum(input)
@@ -158,7 +159,19 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 			&& self_call !== undefined
 			&& is_map(input)
 		) {
-			return self_call(input);
+			const [explicit_prom, res_explicit, _rej] = create_promise();
+			
+			const implicit = unpacker_map(async ($) => {
+				res_explicit(await self_call(input, $));
+			});
+			
+			const explicit = await explicit_prom;
+			
+			if (explicit !== undefined) {
+				return explicit;
+			}
+			
+			return implicit;
 		}
 		
 		if (true
