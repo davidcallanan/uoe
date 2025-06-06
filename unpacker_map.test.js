@@ -1,3 +1,4 @@
+import { api } from "./api.js";
 import { test } from "./test.js";
 import { unpacker_map } from "./unpacker_map.js";
 import { unsuspended_promise } from "./unsuspended_promise.js";
@@ -73,4 +74,16 @@ await test("map calls", async () => {
 		&& await m.greet(person)() === "Hello, Jim!"
 		&& await m.converse(person)() === "How are you today, Jim?"
 	);
+});
+
+await test("api calls", async () => {
+	const m = unpacker_map(($) => {
+		$.query_foo.$ret(api(() => {
+			return unpacker_map(($) => {
+				$.foo.$ret("bar");
+			})
+		}));
+	});
+	
+	return await m.query_foo().foo() === "bar";
 });

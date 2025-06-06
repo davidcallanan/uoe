@@ -14,7 +14,8 @@ const apis = new WeakSet();
  * If calling a map with no arguments returns an api, this api will be implicitely executed. This means a map can still expose indeterminism, provided it is understood that an api return value is expected.
  */
 export const api = (exec) => {
-	const api = unsuspended_promise((input) => exec(input));
+	const api_internal = unsuspended_promise((input) => exec(input));
+	const api = () => api_internal();
 	apis.add(api);
 	return api;
 };
