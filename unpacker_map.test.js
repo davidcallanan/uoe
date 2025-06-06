@@ -4,7 +4,7 @@ import { unsuspended_promise } from "./unsuspended_promise.js";
 
 await test("basic test", async () => {
 	const m = unpacker_map(($) => {
-		$.fall((input) => {
+		$.$fall((input) => {
 			if (input === undefined) {
 				return "hello";
 			}
@@ -36,6 +36,7 @@ await test("nested leaf values", async () => {
 		$.age.$ret(27);
 		$.friends.$ret(["mary", "jane", "joseph"]);
 		$.address(($) => {
+			$.$ret("123 Main St, Monopoly Town, CA");
 			$.street.$ret("123 Main St");
 			$.city.$ret("Monopoly Town");
 			$.state.$ret("CA");
@@ -46,6 +47,7 @@ await test("nested leaf values", async () => {
 		&& await person.name() === "John Doe"
 		&& await person.age() === 27
 		&& (friends => ["mary", "jane", "joseph"].every(entry => friends.includes(entry)))(await person.friends())
+		&& await person.address() === "123 Main St, Monopoly Town, CA"
 		&& await person.address.street() === "123 Main St"
 		&& await person.address.city() === "Monopoly Town"
 		&& await person.address.state() === "CA"

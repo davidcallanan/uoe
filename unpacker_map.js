@@ -42,9 +42,9 @@ import { map } from "./map.js";
  * });
  */
 export const unpacker_map = (unpacker) => {
+	let self_ret = undefined;
 	let self_call = undefined;
 	let self_fall = undefined;
-	let self_ret = undefined;
 	
 	const symbols = new Map();
 	
@@ -164,7 +164,7 @@ export const unpacker_map = (unpacker) => {
 			&& is_enum(input)
 			&& symbol_maps.get(input.sym) !== undefined
 		) {
-			return await symbol_maps.get(input.sym)(input.data);
+			return await symbol_maps.get(input.sym);
 		}
 		
 		if (self_fall !== undefined) {
