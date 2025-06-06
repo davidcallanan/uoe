@@ -3,7 +3,7 @@ import { call_as_async } from "./call_as_async.js";
 
 // TODO: test
 /**
- * @deprecated See `obtain_map`
+ * @deprecated See `obtain_map`. Scheduled for removal in June 2027.
  * 
  * Immediately returns a map equal to that eventually obtained by the given async function.
  * 

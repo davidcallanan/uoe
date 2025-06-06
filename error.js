@@ -1,5 +1,5 @@
 /**
- * @deprecated
+ * @deprecated - Scheduled for removal January 2027.
  * @stability 0 - deprecated
  * 
  * @see user_error.js
