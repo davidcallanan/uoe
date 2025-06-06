@@ -3,6 +3,7 @@ import { is_map } from "./is_map.js";
 import { map } from "./map.js";
 import { obtain_map } from "./obtain_map.js";
 import { create_promise } from "./create_promise.js";
+import { api } from "./api.js";
 
 /**
  * @stability 1 - experimental
@@ -78,20 +79,22 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 			
 			if (prop === "$ret_api") {
 				return (unpacker) => {
-					self_ret = async () => {
-						const [explicit_prom, res_explicit, _rej] = create_promise();
-			
-						const implicit = unpacker_map(async ($) => {
-							res_explicit(await unpacker($));
+					self_ret = () => {
+						return api(async () => {
+							const [explicit_prom, res_explicit, _rej] = create_promise();
+				
+							const implicit = unpacker_map(async ($) => {
+								res_explicit(await unpacker($));
+							});
+							
+							const explicit = await explicit_prom;
+							
+							if (explicit !== undefined) {
+								return explicit;
+							}
+							
+							return implicit;
 						});
-						
-						const explicit = await explicit_prom;
-						
-						if (explicit !== undefined) {
-							return explicit;
-						}
-						
-						return implicit;	
 					};
 				};
 			}
