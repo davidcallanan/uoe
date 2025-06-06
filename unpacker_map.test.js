@@ -75,6 +75,46 @@ await test("map calls", async () => {
 	);
 });
 
+await test("map calls returning maps", async () => {
+	const m = unpacker_map(($) => {
+		$.greet.$call(async (input) => {
+			return unpacker_map(($) => {
+				$.option_a.$ret_lazy(async () => `Hello, ${await input.name()}!`);
+				$.option_b.$ret_lazy(async () => `Bye, ${await input.name()}!`);
+			});
+		});
+	});
+	
+	const person = unpacker_map(($) => {
+		$.name.$ret("Jim");
+	});
+	
+	return (true
+		&& await m.greet(person).option_a() === "Hello, Jim!"
+		&& await m.greet(person).option_b() === "Bye, Jim!"
+	);
+});
+
+await test("map calls returning maps async", async () => {
+	const m = unpacker_map(($) => {
+		$.greet.$call(async (input) => {
+			return unpacker_map(async ($) => {
+				$.option_a.$ret(`Hello, ${await input.name()}!`);
+				$.option_b.$ret(`Bye, ${await input.name()}!`);
+			});
+		});
+	});
+	
+	const person = unpacker_map(($) => {
+		$.name.$ret("Jim");
+	});
+	
+	return (true
+		&& await m.greet(person).option_a() === "Hello, Jim!"
+		&& await m.greet(person).option_b() === "Bye, Jim!"
+	);
+});
+
 await test("api calls", async () => {
 	const m = unpacker_map(($) => {
 		$.query_foo.$ret(api(async () => {
