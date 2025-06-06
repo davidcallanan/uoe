@@ -159,3 +159,13 @@ await test("api calls", async () => {
 		}))().bar() === "baz lipsum"
 	);
 });
+
+await test("fancy api calls", async () => {
+	const m = unpacker_map(($) => {
+		$.query_foo.$ret_api(($) => {
+			$.foo.$ret("bar");
+		});
+	});
+	
+	return await m.query_foo().foo() === "bar";
+});

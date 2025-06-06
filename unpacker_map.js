@@ -76,6 +76,26 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 				};
 			}
 			
+			if (prop === "$ret_api") {
+				return (unpacker) => {
+					self_ret = async () => {
+						const [explicit_prom, res_explicit, _rej] = create_promise();
+			
+						const implicit = unpacker_map(async ($) => {
+							res_explicit(await unpacker($));
+						});
+						
+						const explicit = await explicit_prom;
+						
+						if (explicit !== undefined) {
+							return explicit;
+						}
+						
+						return implicit;	
+					};
+				};
+			}
+			
 			if (/^[a-zA-Z0-9_]+$/.test(prop)) {
 				return new Proxy((unpacker) => {
 					symbols.set(prop, symbols.get(prop) ?? {});
@@ -110,6 +130,13 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 							};
 						}
 						
+						if (nested_prop === "$ret_api") {
+							return (unpacker) => {
+								symbols.set(prop, symbols.get(prop) ?? {});
+								symbols.get(prop).ret_api = unpacker;
+							};
+						}
+						
 						return target[nested_prop];
 					},
 				});
@@ -127,6 +154,10 @@ export const unpacker_map = (unpacker) => obtain_map((async () =>{
 		symbol_maps.set(sym, unpacker_map(($) => {
 			if (entry.ret !== undefined) {
 				$.$ret_lazy(entry.ret);
+			}
+			
+			if (entry.ret_api !== undefined) {
+				$.$ret_api(entry.ret_api);
 			}
 			
 			if (entry.call !== undefined) {
