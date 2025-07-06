@@ -5,9 +5,9 @@
  * 
  * In particular, this produces an error that is understood to be caused by the payload provided by the user being corrupt or malformed in some way. This error should only be produced if the interface always finds this payload to be illegal irrespective of the current state of the system. That is, the error should be produced if it is one that a better type system could have encoded at compile-time by only analyzing the payload and not the current state of the system or any external factors.
  * 
- * The optional `cause` allows the programmer to keep track of the origin of the error and maintain an error chain. This must be another uoe-error. The optional `ref` allows the programmer to obtain details for this error in a supplementary interface if available and must be universally unique. The user is expected to know how to interact with such a supplementary interface if one is provided. A supplementary interface is especially useful if a cause chain must be maintained that does not involve uoe-errors, such as native JavaScript exceptions.
+ * The optional `cause` allows the developer to keep track of the origin of the error and maintain an error chain. This must be another uoe-error. The optional `ref` allows the user to obtain details for this error in a supplementary interface if available and must be universally unique. The user is expected to know how to interact with such a supplementary interface if one is provided. A supplementary interface is especially useful if a cause chain must be maintained that does not involve uoe-errors, such as native JavaScript exceptions.
  */
-export const error_user_payload = (message, { cause, details, ref }) => enm.error({
+export const error_user_payload = (message, { cause, ref }) => enm.error({
 	short_code: "up",
 	type: "user",
 	class: "payload",
