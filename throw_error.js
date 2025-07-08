@@ -3,36 +3,35 @@
  * 
  * Converts a uoe-error into a JavaScript error and throws it.
  */
-export const throw_error = (body) => {
+export const throw_error = (error) => {
+	if (error?.sym === "error") {
+		throw_error(error.data);
+	}
+
 	throw (() => {
-		if (body.error_type === "user_error") {
-			const message =
-	`error_type       ${body.error_type}
-	error_message    ${body.error_message}
-	http_status_code ${body.http_status_code}
-	`;
-			let err = new Error(message, { cause: body });
+		if (error.type === "user") {
+			let err = new Error(
+				`type   ${error.type}
+class  ${error.class}
+${error.message}
+`);
 			err.name = "UserError";
-			return err;
-		} else if (body.error_type === "state_error") {
-			const message =
-	`error_type       ${body.error_type}
-	error_name       ${body.error_name}
-	error_message    ${body.error_message}
-	http_status_code ${body.http_status_code}
-	`;
-			let err = new Error(message, { cause: body });
+			err.details = error;
+		} else if (error.type === "state") {
+			let err = new Error(
+				`type   ${error.type}
+name   ${error.name}
+${error.message}
+`);
 			err.name = "StateError";
-			return err;
-		} else if (body.error_type === "internal_error") {
-			const message =
-	`error_type       ${body.error_type}
-	error_message    ${body.error_message}
-	http_status_code ${body.http_status_code}
-	`;
-			let err = new Error(message, { cause: body });
+			err.details = error;
+		} else if (error.type === "internal") {
+			let err = new Error(
+				`type   ${error.type}
+${error.message}
+`);
 			err.name = "InternalError";
-			return err;
+			err.details = error;
 		}
 	})();
 };
