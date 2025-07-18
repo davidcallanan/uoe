@@ -8,6 +8,8 @@ const context_id_regex = new RegExp(`${context_id_prefix}([0-9]+)${context_id_su
 let next_context_id = 0;
 
 /**
+ * @stability 0 - deprecated
+ * @deprecated As native async context is in development, this feature is halted.
  * 
  * Requires V8 and async stack traces feature. Credit to @WolverinDEV.
  * 
