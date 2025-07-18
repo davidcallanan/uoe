@@ -1,5 +1,6 @@
 /**
- * @stability 2 - provisional
+ * @stability 0 - deprecated
+ * @deprecated Superseded by `error_user_general`. Scheduled for removal in July 2027.
  */
 export const user_error = (message, cause) => ({
 	status: "error",
