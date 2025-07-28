@@ -49,7 +49,7 @@ export const tan_encode = (entries) => {
 				prev_was = "string";
 			}
 		} else if (Array.isArray(entry)) {
-			const itself = emit_ton(entry);
+			const itself = tan_encode(entry);
 
 			if (prev_was === "multiline_tan") {
 				output += "\n";
