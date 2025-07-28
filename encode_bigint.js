@@ -1,14 +1,7 @@
-export const encode_bigint = (bint, num_bytes) => {
-	num_bytes ??= 8;
+import { bigint_encode } from "./bigint_encode.js";
 
-	const bytes = new Uint8Array(num_bytes);
-
-	for (let i = num_bytes - 1; i >= 0; i--) {
-		bytes[i] = Number(bint & 255n);
-		bint >>= 8n;
-	}
-
-	return bytes;
-};
-
+/**
+ * @deprecated will be removed by December 2025 in favour of bigint_encode.
+ */
+export const encode_bigint = bigint_encode
 export const encodeBigint = encode_bigint;
