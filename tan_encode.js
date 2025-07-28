@@ -19,6 +19,8 @@ const is_dangerous = (entry) => (false
  * Encodes an (optionally nested) array of strings into "Textual Array Notation".
  * 
  * Can handle strings or uint8arrays containing arbitrary textual or binary data, including newlines.
+ * 
+ * TODO: use uint8arrays internally as strings in JavaScript cannot represent arbitrary bytes (you learn something new every day).
  */
 export const tan_encode = (entries) => {
 	if (!Array.isArray(entries)) {
