@@ -1,12 +1,7 @@
-export const decode_bigint = (bytes) => {
-	let bint = 0n;
+import { bigint_decode } from "./bigint_decode.js";
 
-	for (let i = 0; i < bytes.length; i++) {
-		bint <<= 8n;
-		bint += BigInt(bytes[i]);
-	}
-
-	return bint;
-};
-
+/**
+ * @deprecated will be removed by December 2025 in favour of bigint_decode.
+ */
+export const decode_bigint = bigint_decode;
 export const decodeBigint = decode_bigint;

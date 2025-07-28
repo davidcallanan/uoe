@@ -14,4 +14,4 @@ export const bigint_encode = (bint, num_bytes) => {
 	return bytes;
 };
 
-export const bigintEncode = bigintEncode;
+export const bigintEncode = bigint_encode;
