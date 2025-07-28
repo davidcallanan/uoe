@@ -17,3 +17,5 @@ export const base64_encode = (input) => {
 
 	return btoa(latin_string);
 };
+
+export const base64Encode = base64_encode;
