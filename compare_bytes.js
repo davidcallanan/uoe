@@ -8,8 +8,8 @@ import { throw_error } from "./throw_error.js";
  */
 export const compare_bytes = (a, b) => {
 	if (false
-		|| !a instanceof Uint8Array
-		|| !b instanceof Uint8Array
+		|| !(a instanceof Uint8Array)
+		|| !(b instanceof Uint8Array)
 	) {
 		throw_error(error_user_payload("inputs must be uint8array"));
 	}
