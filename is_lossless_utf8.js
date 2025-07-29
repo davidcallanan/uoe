@@ -2,6 +2,10 @@ import { compare_bytes } from "./compare_bytes.js";
 import { error_user_payload } from "./error_user_payload.js";
 import { throw_error } from "./throw_error.js";
 
+const decoder_fatal = new TextDecoder("utf-8", {
+	fatal: true,
+});
+
 /**
  * @stability 1 - experimental
  * 
@@ -17,9 +21,7 @@ export const is_lossless_utf8 = (input) => {
 	}
 
 	try {
-		var decoded = new TextDecoder({
-			fatal: true,
-		}).decode(input);
+		var decoded = decoder_fatal.decode(input);
 	} catch (e) {
 		return false;
 	}
