@@ -5,33 +5,43 @@
  */
 export const throw_error = (error) => {
 	if (error?.sym === "error") {
+		console.log("actually found error");
 		throw_error(error.data);
 	}
 
 	throw (() => {
 		if (error.type === "user") {
 			let err = new Error(
-				`type   ${error.type}
+				`
+type   ${error.type}
 class  ${error.class}
 ${error.message}
 `);
 			err.name = "UserError";
 			err.details = error;
-		} else if (error.type === "state") {
+			return err;
+		}
+
+		if (error.type === "state") {
 			let err = new Error(
-				`type   ${error.type}
+				`
+type   ${error.type}
 name   ${error.name}
 ${error.message}
 `);
 			err.name = "StateError";
 			err.details = error;
-		} else if (error.type === "internal") {
+			return err;
+		}
+		if (error.type === "internal") {
 			let err = new Error(
-				`type   ${error.type}
+				`
+type   ${error.type}
 ${error.message}
 `);
 			err.name = "InternalError";
 			err.details = error;
+			return err;
 		}
 	})();
 };
