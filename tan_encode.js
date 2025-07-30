@@ -68,7 +68,7 @@ const encode_raw_entry = (entry) => {
  * 
  * All binary data is valid, including newlines and empty strings.
  */
-export const tan_encode = (entries) => {
+export const tan_encode = (entries, no_trailing) => {
 	if (!Array.isArray(entries)) {
 		throw_error(error_user_payload("entries must be array"));
 	}
@@ -109,7 +109,7 @@ export const tan_encode = (entries) => {
 				}
 			}
 		} else if (Array.isArray(entry)) {
-			const itself = tan_encode(entry);
+			const itself = tan_encode(entry, true);
 
 			if (prev_was === "multiline_tan") {
 				output += "\n";
@@ -120,6 +120,10 @@ export const tan_encode = (entries) => {
 		} else {
 			throw_error(error_user_payload("each entry must be string, uint8array or array"));
 		}
+	}
+
+	if (no_trailing && output.endsWith("\n")) {
+		return output.substring(0, output.length - 1);
 	}
 
 	return output;
