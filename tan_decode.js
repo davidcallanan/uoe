@@ -1,4 +1,5 @@
 import { error_user_payload } from "./error_user_payload.js";
+import { throw_error } from "./throw_error.js";
 
 const unprefix = (lines, num_chars) => {
 	return lines.map((line) => line.substring(num_chars));
@@ -73,7 +74,7 @@ export const tan_decode = (input, options) => {
 	options.format ??= "string";
 
 	if (typeof input !== "string") {
-		throw error_user_payload("input must be string");
+		throw_error(error_user_payload("input must be string"));
 	}
 
 	const lines = input.split("\n");
