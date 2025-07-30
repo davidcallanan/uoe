@@ -1,11 +1,41 @@
 import { error_user_payload } from "./error_user_payload.js";
+import { hex_decode } from "./hex_decode.js";
 import { throw_error } from "./throw_error.js";
+
+const encoder = new TextEncoder();
 
 const unprefix = (lines, num_chars) => {
 	return lines.map((line) => line.substring(num_chars));
 };
 
-export const _tan_decode = (lines, format_uint8array) => {
+const decode_raw_entry = (lines) => {
+	let bytes = new Uint8Array(0);
+	let prev_was = undefined;
+
+	for (const line of lines) {
+		const remains = line.substring(3);
+
+		const content = (() => {
+			if (line.startsWith(">u ")) {
+				const content = encoder.encode(prev_was === "unicode" ? remains + "\n" : remains);
+				prev_was = "unicode";
+				return content;
+			} else if (line.startsWith(">x ")) {
+				prev_was = "hex";
+				return hex_decode(remains);
+			}
+		})();
+
+		const original = bytes;
+		bytes = new Uint8Array(bytes.length + content.length);
+		bytes.set(original);
+		bytes.set(content, original.length);
+	}
+
+	return bytes;
+};
+
+export const _tan_decode = (lines) => {
 	const entries = [];
 
 	let i = 0;
@@ -18,43 +48,49 @@ export const _tan_decode = (lines, format_uint8array) => {
 		} else if (line.startsWith(">> ")) {
 			const nested_lines = [];
 
-			for (let j = i; (true
+			for (var j = i; (true
 				&& j < lines.length
 				&& lines[j].startsWith(">> ")
 			); j++) {
 				nested_lines.push(lines[j]);
 			}
 
-			entries.push(_tan_decode(unprefix(nested_lines, 3), format_uint8array));
+			entries.push(_tan_decode(unprefix(nested_lines, 3)));
 
 			i = j;
-		} else if (line.startsWith("> ")) {
+		} else if (false
+			|| line.startsWith(">u ")
+			|| line.startsWith(">x ")
+		) {
 			const nested_lines = [];
 
 			for (let j = i; (true
+				&& j < lines.length
+				&& (false
+					|| lines[j].startsWith(">u ")
+					|| lines[j].startsWith(">x ")
+				)
+			); j++) {
+				nested_lines.push(lines[j]);
+				entries.push(decode_raw_entry(nested_lines));
+			}
+		} else if (line.startsWith("> ")) {
+			const nested_lines = [];
+
+			for (var j = i; (true
 				&& j < lines.length
 				&& lines[j].startsWith("> ")
 			); j++) {
 				nested_lines.push(lines[j]);
 			}
 
-			entries.push(unprefix(nested_lines, 2).join("\n"));
+			entries.push(encoder.encode(unprefix(nested_lines, 2).join("\n")));
 
 			i = j;
 		} else {
-			entries.push(line);
+			entries.push(encoder.encode(line));
 			i++;
 		}
-	}
-
-	if (format_uint8array) {
-		return entries.map((entry) => {
-			if (typeof entry === "string") {
-				return new TextEncoder().encode(entry);
-			}
-
-			return entry;
-		});
 	}
 
 	return entries;
@@ -63,22 +99,15 @@ export const _tan_decode = (lines, format_uint8array) => {
 /**
  * @stabililty 1 - experimental
  *
- * Decodes a string in "Textual Array Notation" back into an array of strings or nested arrays.
- * 
- * You can choose to set options.format to "uint8array" if you prefer this format over strings. The default format is "string".
- * 
- * TODO: I learned today that utf8 cannot store arbitrary binary data. I had understood my whole life that the rendering engine would render "corrupt" characters, but I figured that the raw data would still be used internally in text editors etc. It seems I was wrong, and I am thus forced to implement a custom encoding mechanism.
+ * Decodes "Textual Array Notation" back into a (potentially-nested) array of uint8arrays.
  */
-export const tan_decode = (input, options) => {
-	options ??= {};
-	options.format ??= "string";
-
+export const tan_decode = (input) => {
 	if (typeof input !== "string") {
 		throw_error(error_user_payload("input must be string"));
 	}
 
 	const lines = input.split("\n");
-	return _tan_decode(lines, options.format === "uint8array");
+	return _tan_decode(lines);
 };
 
 export const tanDecode = tan_decode;
