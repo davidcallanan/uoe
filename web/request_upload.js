@@ -1,6 +1,6 @@
 import { create_promise } from "../create_promise.js";
 
-export const receive_upload = (document, options) => {
+export const request_upload = (document, options) => {
 	options ??= {};
 	options.allow_multiple ??= false;
 
