@@ -1,3 +1,5 @@
+import { enm } from "./enm.js";
+
 /**
  * @stability 1 - experimental
  * 
@@ -7,7 +9,7 @@
  * 
  * The optional `cause` allows the developer to keep track of the origin of the error and maintain an error chain. This must be another uoe-error. The optional `ref` allows the user to obtain details for this error in a supplementary interface if available and must be universally unique. The user is expected to know how to interact with such a supplementary interface if one is provided. A supplementary interface is especially useful if a cause chain must be maintained that does not involve uoe-errors, such as native JavaScript exceptions.
  */
-export const error_user_state = (message, { cause, ref }) => enm.error({
+export const error_user_state = (message, { cause, ref } = {}) => enm.error({
 	short_code: "eus",
 	type: "user",
 	class: "state",
